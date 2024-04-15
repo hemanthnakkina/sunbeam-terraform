@@ -729,3 +729,27 @@ variable "grafana-agent-config" {
   default     = {}
   description = "Operator config for grafana-agent deployment"
 }
+
+variable "enable-images-sync" {
+  description = "Enable Images Sync"
+  type        = bool
+  default     = false
+}
+
+variable "images-sync-channel" {
+  type        = string
+  default     = null
+  description = "Operator channel for openstack-images-sync deployment"
+}
+
+variable "images-sync-revision" {
+  type        = number
+  default     = null
+  description = "Operator channel revision for openstack-images-sync deployment"
+}
+
+variable "images-sync-config" {
+  type        = map(string)
+  default     = {}
+  description = "Operator config for openstack-images-sync deployment"
+}

@@ -1097,3 +1097,63 @@ resource "juju_integration" "grafana-agent-to-cos-grafana" {
     offer_url = var.grafana-dashboard-offer-url
   }
 }
+
+resource "juju_application" "images-sync" {
+  count = var.enable-images-sync ? 1 : 0
+  name  = "images-sync"
+  model = juju_model.sunbeam.name
+
+  charm {
+    name     = "openstack-images-sync-k8s"
+    channel  = var.images-sync-channel == null ? var.openstack-channel : var.images-sync-channel
+    revision = var.images-sync-revision
+  }
+
+  units  = 1
+  config = var.images-sync-config
+}
+
+resource "juju_integration" "images-sync-to-keystone" {
+  count = var.enable-images-sync ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = module.keystone.name
+    endpoint = "identity-service"
+  }
+
+  application {
+    name     = juju_application.images-sync[count.index].name
+    endpoint = "identity-service"
+  }
+}
+
+resource "juju_integration" "images-sync-to-traefik-internal" {
+  count = var.enable-images-sync ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.traefik.name
+    endpoint = "ingress"
+  }
+
+  application {
+    name     = juju_application.images-sync[count.index].name
+    endpoint = "ingress-internal"
+  }
+}
+
+resource "juju_integration" "images-sync-to-traefik-public" {
+  count = var.enable-images-sync ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.traefik-public.name
+    endpoint = "ingress"
+  }
+
+  application {
+    name     = juju_application.images-sync[count.index].name
+    endpoint = "ingress-public"
+  }
+}
