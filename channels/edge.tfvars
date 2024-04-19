@@ -1,5 +1,5 @@
 # Core channels for direct charm dependencies
-openstack-channel = "2023.2/edge"
+openstack-channel = "2024.1/edge"
 ovn-channel       = "23.09/edge"
 # Test with candidate for dependent projects
 mysql-channel                   = "8.0/candidate"
