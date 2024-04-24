@@ -122,8 +122,8 @@ module "nova" {
   mysql                = module.mysql.name["nova"]
   keystone             = module.keystone.name
   keystone-cacerts     = module.keystone.name
-  ingress-internal     = ""
-  ingress-public       = ""
+  ingress-internal     = juju_application.traefik.name
+  ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
   resource-configs     = var.nova-config
