@@ -91,6 +91,7 @@ module "glance" {
   resource-configs = merge(var.glance-config, {
     ceph-osd-replication-count     = var.ceph-osd-replication-count
     enable-telemetry-notifications = var.enable-telemetry
+    region                         = var.region
   })
 }
 
@@ -109,6 +110,7 @@ module "keystone" {
   mysql-router-channel = var.mysql-router-channel
   resource-configs = merge(var.keystone-config, {
     enable-telemetry-notifications = var.enable-telemetry
+    region                         = var.region
   })
 }
 
@@ -127,7 +129,9 @@ module "nova" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
-  resource-configs     = var.nova-config
+  resource-configs = merge(var.nova-config, {
+    region = var.region
+  })
 }
 
 resource "juju_integration" "nova-to-ingress-public" {
@@ -192,7 +196,9 @@ module "neutron" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
-  resource-configs     = var.neutron-config
+  resource-configs = merge(var.neutron-config, {
+    region = var.region
+  })
 }
 
 module "placement" {
@@ -209,7 +215,9 @@ module "placement" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
-  resource-configs     = var.placement-config
+  resource-configs = merge(var.placement-config, {
+    region = var.region
+  })
 }
 
 resource "juju_application" "traefik" {
@@ -348,7 +356,9 @@ module "cinder" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
-  resource-configs     = var.cinder-config
+  resource-configs = merge(var.cinder-config, {
+    region = var.region
+  })
 }
 
 module "cinder-ceph" {
@@ -438,7 +448,9 @@ module "heat" {
   ingress-public       = ""
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
-  resource-configs     = var.heat-config
+  resource-configs = merge(var.heat-config, {
+    region = var.region
+  })
 }
 
 resource "juju_integration" "heat-to-ingress-public" {
@@ -503,7 +515,9 @@ module "aodh" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
-  resource-configs     = var.aodh-config
+  resource-configs = merge(var.aodh-config, {
+    region = var.region
+  })
 }
 
 module "gnocchi" {
@@ -523,6 +537,7 @@ module "gnocchi" {
   mysql-router-channel = var.mysql-router-channel
   resource-configs = merge(var.gnocchi-config, {
     ceph-osd-replication-count = var.ceph-osd-replication-count
+    region                     = var.region
   })
 }
 
@@ -550,7 +565,7 @@ resource "juju_application" "ceilometer" {
     revision = var.ceilometer-revision
   }
 
-  config = var.ceilometer-config
+  config = merge(var.ceilometer-config, { region = var.region })
   units  = var.ha-scale
 }
 
@@ -632,7 +647,7 @@ resource "juju_application" "openstack-exporter" {
     revision = var.openstack-exporter-revision
   }
 
-  config = var.openstack-exporter-config
+  config = merge(var.openstack-exporter-config, { region = var.region })
   units  = 1
 }
 
@@ -728,7 +743,9 @@ module "octavia" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
-  resource-configs     = var.octavia-config
+  resource-configs = merge(var.octavia-config, {
+    region = var.region
+  })
 }
 
 # juju integrate ovn-central octavia
@@ -812,6 +829,7 @@ module "designate" {
   mysql-router-channel = var.mysql-router-channel
   resource-configs = merge(var.designate-config, {
     "nameservers" = var.nameservers
+    region        = var.region
   })
 }
 
@@ -893,7 +911,9 @@ module "barbican" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
-  resource-configs     = var.barbican-config
+  resource-configs = merge(var.barbican-config, {
+    region = var.region
+  })
 }
 
 resource "juju_integration" "barbican-to-vault" {
@@ -946,6 +966,7 @@ module "magnum" {
   mysql-router-channel = var.mysql-router-channel
   resource-configs = merge(var.magnum-config, {
     "cluster-user-trust" = "true"
+    region               = var.region
   })
 }
 
@@ -1036,7 +1057,7 @@ resource "juju_application" "tempest" {
   }
 
   units  = 1
-  config = var.tempest-config
+  config = merge(var.tempest-config, { region = var.region })
 }
 
 resource "juju_integration" "tempest-to-keystone" {
@@ -1155,7 +1176,7 @@ resource "juju_application" "images-sync" {
   }
 
   units  = 1
-  config = var.images-sync-config
+  config = merge(var.images-sync-config, { region = var.region })
 }
 
 resource "juju_integration" "images-sync-to-keystone" {
