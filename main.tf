@@ -798,7 +798,7 @@ module "designate" {
   charm                = "designate-k8s"
   name                 = "designate"
   model                = juju_model.sunbeam.name
-  channel              = var.designate-channel
+  channel              = var.designate-channel == null ? var.openstack-channel : var.designate-channel
   revision             = var.designate-revision
   rabbitmq             = module.rabbitmq.name
   mysql                = var.many-mysql ? module.mysql-designate[0].name["designate"] : "mysql"
@@ -825,6 +825,21 @@ resource "juju_integration" "designate-to-bind" {
   application {
     name     = juju_application.bind[count.index].name
     endpoint = "dns-backend"
+  }
+}
+
+resource "juju_integration" "designate-to-neutron" {
+  count = var.enable-designate ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = module.designate[count.index].name
+    endpoint = "dnsaas"
+  }
+
+  application {
+    name     = module.neutron.name
+    endpoint = "external-dns"
   }
 }
 
