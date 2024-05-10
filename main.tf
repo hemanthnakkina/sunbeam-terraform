@@ -359,6 +359,7 @@ module "cinder-ceph" {
   revision             = var.cinder-ceph-revision
   rabbitmq             = module.rabbitmq.name
   mysql                = module.mysql.name["cinder"]
+  keystone-credentials = module.keystone.name
   ingress-internal     = ""
   ingress-public       = ""
   scale                = var.ha-scale
