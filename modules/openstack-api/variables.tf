@@ -52,6 +52,12 @@ variable "model" {
   type        = string
 }
 
+variable "trust" {
+  description = "Give charm rights to it's k8s resources"
+  type        = bool
+  default     = false
+}
+
 variable "rabbitmq" {
   description = "RabbitMQ operator to integrate with"
   type        = string

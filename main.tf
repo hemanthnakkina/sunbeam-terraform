@@ -77,6 +77,7 @@ module "glance" {
   charm                = "glance-k8s"
   name                 = "glance"
   model                = juju_model.sunbeam.name
+  trust                = true
   channel              = var.glance-channel == null ? var.openstack-channel : var.glance-channel
   revision             = var.glance-revision
   rabbitmq             = module.rabbitmq.name
