@@ -27,6 +27,7 @@ terraform {
 resource "juju_application" "service" {
   name  = var.name
   model = var.model
+  trust = var.trust
 
   charm {
     name     = var.charm
