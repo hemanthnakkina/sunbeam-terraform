@@ -753,3 +753,9 @@ variable "images-sync-config" {
   default     = {}
   description = "Operator config for openstack-images-sync deployment"
 }
+
+variable "region" {
+  description = "Region name"
+  type        = string
+  default     = "RegionOne"
+}
