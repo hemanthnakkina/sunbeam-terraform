@@ -39,6 +39,12 @@ variable "mysql-config" {
   }
 }
 
+variable "mysql-config-map" {
+  description = "Operator configs for specific MySQL deployment (applied on top of mysql-config for specific application)"
+  type        = map(map(string))
+  default     = {}
+}
+
 variable "mysql-router-channel" {
   description = "Operator channel for MySQL router deployment"
   default     = "8.0/stable"
