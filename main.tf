@@ -27,8 +27,27 @@ terraform {
 provider "juju" {}
 
 locals {
-  services-with-mysql = ["keystone", "glance", "nova", "horizon", "neutron", "placement", "cinder"]
-  grafana-agent-name  = length(juju_application.grafana-agent) > 0 ? juju_application.grafana-agent[0].name : null
+  mysql-services = {
+    keystone  = var.many-mysql ? lookup(var.mysql-config-map, "keystone", {}) : null,
+    glance    = var.many-mysql ? lookup(var.mysql-config-map, "glance", {}) : null,
+    nova      = var.many-mysql ? lookup(var.mysql-config-map, "nova", {}) : null,
+    horizon   = var.many-mysql ? lookup(var.mysql-config-map, "horizon", {}) : null,
+    neutron   = var.many-mysql ? lookup(var.mysql-config-map, "neutron", {}) : null,
+    placement = var.many-mysql ? lookup(var.mysql-config-map, "placement", {}) : null,
+    cinder    = var.many-mysql ? lookup(var.mysql-config-map, "cinder", {}) : null,
+    heat      = var.many-mysql && var.enable-heat ? lookup(var.mysql-config-map, "heat", {}) : null,
+    magnum    = var.many-mysql && var.enable-magnum ? lookup(var.mysql-config-map, "magnum", {}) : null,
+    aodh      = var.many-mysql && var.enable-telemetry ? lookup(var.mysql-config-map, "aodh", {}) : null,
+    gnocchi   = var.many-mysql && var.enable-telemetry ? lookup(var.mysql-config-map, "gnocchi", {}) : null,
+    octavia   = var.many-mysql && var.enable-octavia ? lookup(var.mysql-config-map, "octavia", {}) : null,
+    designate = var.many-mysql && var.enable-designate ? lookup(var.mysql-config-map, "designate", {}) : null,
+    barbican  = var.many-mysql && var.enable-barbican ? lookup(var.mysql-config-map, "barbican", {}) : null,
+  }
+  single-mysql = "mysql"
+  mysql = {
+    for k, v in local.mysql-services : k => v != null ? "${k}-mysql" : local.single-mysql
+  }
+  grafana-agent-name = length(juju_application.grafana-agent) > 0 ? juju_application.grafana-agent[0].name : null
 }
 
 data "juju_offer" "microceph" {
@@ -48,16 +67,29 @@ resource "juju_model" "sunbeam" {
   config     = var.config
 }
 
-module "mysql" {
+module "single-mysql" {
+  count                 = var.many-mysql ? 0 : 1
   source                = "./modules/mysql"
   model                 = juju_model.sunbeam.name
-  name                  = "mysql"
+  name                  = local.single-mysql
   channel               = var.mysql-channel
   revision              = var.mysql-revision
   scale                 = var.ha-scale
-  many-mysql            = var.many-mysql
-  services              = local.services-with-mysql
   resource-configs      = var.mysql-config
+  grafana-dashboard-app = local.grafana-agent-name
+  metrics-endpoint-app  = local.grafana-agent-name
+  logging-app           = local.grafana-agent-name
+}
+
+module "many-mysql" {
+  for_each              = tomap({ for k, v in local.mysql-services : k => v if v != null })
+  source                = "./modules/mysql"
+  model                 = juju_model.sunbeam.name
+  name                  = local.mysql[each.key]
+  channel               = var.mysql-channel
+  revision              = var.mysql-revision
+  scale                 = var.ha-scale
+  resource-configs      = merge(var.mysql-config, each.value)
   grafana-dashboard-app = local.grafana-agent-name
   metrics-endpoint-app  = local.grafana-agent-name
   logging-app           = local.grafana-agent-name
@@ -81,7 +113,7 @@ module "glance" {
   channel              = var.glance-channel == null ? var.openstack-channel : var.glance-channel
   revision             = var.glance-revision
   rabbitmq             = module.rabbitmq.name
-  mysql                = module.mysql.name["glance"]
+  mysql                = local.mysql["glance"]
   keystone             = module.keystone.name
   keystone-cacerts     = module.keystone.name
   ingress-internal     = juju_application.traefik.name
@@ -103,7 +135,7 @@ module "keystone" {
   channel              = var.keystone-channel == null ? var.openstack-channel : var.keystone-channel
   revision             = var.keystone-revision
   rabbitmq             = module.rabbitmq.name
-  mysql                = module.mysql.name["keystone"]
+  mysql                = local.mysql["keystone"]
   ingress-internal     = juju_application.traefik.name
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
@@ -122,7 +154,7 @@ module "nova" {
   channel              = var.nova-channel == null ? var.openstack-channel : var.nova-channel
   revision             = var.nova-revision
   rabbitmq             = module.rabbitmq.name
-  mysql                = module.mysql.name["nova"]
+  mysql                = local.mysql["nova"]
   keystone             = module.keystone.name
   keystone-cacerts     = module.keystone.name
   ingress-internal     = juju_application.traefik.name
@@ -169,7 +201,7 @@ module "horizon" {
   model                = juju_model.sunbeam.name
   channel              = var.horizon-channel == null ? var.openstack-channel : var.horizon-channel
   revision             = var.horizon-revision
-  mysql                = module.mysql.name["horizon"]
+  mysql                = local.mysql["horizon"]
   keystone-credentials = module.keystone.name
   keystone-cacerts     = module.keystone.name
   ingress-internal     = juju_application.traefik.name
@@ -189,7 +221,7 @@ module "neutron" {
   channel              = var.neutron-channel == null ? var.openstack-channel : var.neutron-channel
   revision             = var.neutron-revision
   rabbitmq             = module.rabbitmq.name
-  mysql                = module.mysql.name["neutron"]
+  mysql                = local.mysql["neutron"]
   keystone             = module.keystone.name
   keystone-cacerts     = module.keystone.name
   ingress-internal     = juju_application.traefik.name
@@ -208,7 +240,7 @@ module "placement" {
   model                = juju_model.sunbeam.name
   channel              = var.placement-channel == null ? var.openstack-channel : var.placement-channel
   revision             = var.placement-revision
-  mysql                = module.mysql.name["placement"]
+  mysql                = local.mysql["placement"]
   keystone             = module.keystone.name
   keystone-cacerts     = module.keystone.name
   ingress-internal     = juju_application.traefik.name
@@ -349,7 +381,7 @@ module "cinder" {
   channel              = var.cinder-channel == null ? var.openstack-channel : var.cinder-channel
   revision             = var.cinder-revision
   rabbitmq             = module.rabbitmq.name
-  mysql                = module.mysql.name["cinder"]
+  mysql                = local.mysql["cinder"]
   keystone             = module.keystone.name
   keystone-cacerts     = module.keystone.name
   ingress-internal     = juju_application.traefik.name
@@ -369,7 +401,7 @@ module "cinder-ceph" {
   channel              = var.cinder-ceph-channel == null ? var.openstack-channel : var.cinder-ceph-channel
   revision             = var.cinder-ceph-revision
   rabbitmq             = module.rabbitmq.name
-  mysql                = module.mysql.name["cinder"]
+  mysql                = local.mysql["cinder"]
   keystone-credentials = module.keystone.name
   ingress-internal     = ""
   ingress-public       = ""
@@ -415,22 +447,6 @@ resource "juju_offer" "ca-offer" {
   endpoint         = "certificates"
 }
 
-module "mysql-heat" {
-  count                 = var.enable-heat ? (var.many-mysql ? 1 : 0) : 0
-  source                = "./modules/mysql"
-  model                 = juju_model.sunbeam.name
-  name                  = "mysql"
-  channel               = var.mysql-channel
-  revision              = var.mysql-revision
-  scale                 = var.ha-scale
-  many-mysql            = var.many-mysql
-  services              = ["heat"]
-  resource-configs      = var.mysql-config
-  grafana-dashboard-app = local.grafana-agent-name
-  metrics-endpoint-app  = local.grafana-agent-name
-  logging-app           = local.grafana-agent-name
-}
-
 module "heat" {
   count                = var.enable-heat ? 1 : 0
   source               = "./modules/openstack-api"
@@ -440,7 +456,7 @@ module "heat" {
   channel              = var.heat-channel == null ? var.openstack-channel : var.heat-channel
   revision             = var.heat-revision
   rabbitmq             = module.rabbitmq.name
-  mysql                = var.many-mysql ? module.mysql-heat[0].name["heat"] : "mysql"
+  mysql                = local.mysql["heat"]
   keystone             = module.keystone.name
   keystone-ops         = module.keystone.name
   keystone-cacerts     = module.keystone.name
@@ -483,22 +499,6 @@ resource "juju_integration" "heat-to-ingress-internal" {
   }
 }
 
-module "mysql-telemetry" {
-  count                 = var.enable-telemetry ? (var.many-mysql ? 1 : 0) : 0
-  source                = "./modules/mysql"
-  model                 = juju_model.sunbeam.name
-  name                  = "mysql"
-  channel               = var.mysql-channel
-  revision              = var.mysql-revision
-  scale                 = var.ha-scale
-  many-mysql            = var.many-mysql
-  services              = ["aodh", "gnocchi"]
-  resource-configs      = var.mysql-config
-  grafana-dashboard-app = local.grafana-agent-name
-  metrics-endpoint-app  = local.grafana-agent-name
-  logging-app           = local.grafana-agent-name
-}
-
 module "aodh" {
   count                = var.enable-telemetry ? 1 : 0
   source               = "./modules/openstack-api"
@@ -508,7 +508,7 @@ module "aodh" {
   channel              = var.aodh-channel == null ? var.openstack-channel : var.aodh-channel
   revision             = var.aodh-revision
   rabbitmq             = module.rabbitmq.name
-  mysql                = var.many-mysql ? module.mysql-telemetry[0].name["aodh"] : "mysql"
+  mysql                = local.mysql["aodh"]
   keystone             = module.keystone.name
   keystone-cacerts     = module.keystone.name
   ingress-internal     = juju_application.traefik.name
@@ -528,7 +528,7 @@ module "gnocchi" {
   model                = juju_model.sunbeam.name
   channel              = var.gnocchi-channel == null ? var.openstack-channel : var.gnocchi-channel
   revision             = var.gnocchi-revision
-  mysql                = var.many-mysql ? module.mysql-telemetry[0].name["gnocchi"] : "mysql"
+  mysql                = local.mysql["gnocchi"]
   keystone             = module.keystone.name
   keystone-cacerts     = module.keystone.name
   ingress-internal     = juju_application.traefik.name
@@ -711,22 +711,6 @@ resource "juju_integration" "openstack-exporter-to-grafana-dashboard" {
   }
 }
 
-module "mysql-octavia" {
-  count                 = var.enable-octavia ? (var.many-mysql ? 1 : 0) : 0
-  source                = "./modules/mysql"
-  model                 = juju_model.sunbeam.name
-  name                  = "mysql"
-  channel               = var.mysql-channel
-  revision              = var.mysql-revision
-  scale                 = var.ha-scale
-  many-mysql            = var.many-mysql
-  services              = ["octavia"]
-  resource-configs      = var.mysql-config
-  grafana-dashboard-app = local.grafana-agent-name
-  metrics-endpoint-app  = local.grafana-agent-name
-  logging-app           = local.grafana-agent-name
-}
-
 module "octavia" {
   count                = var.enable-octavia ? 1 : 0
   source               = "./modules/openstack-api"
@@ -735,7 +719,7 @@ module "octavia" {
   model                = juju_model.sunbeam.name
   channel              = var.octavia-channel == null ? var.openstack-channel : var.octavia-channel
   revision             = var.octavia-revision
-  mysql                = var.many-mysql ? module.mysql-octavia[0].name["octavia"] : "mysql"
+  mysql                = local.mysql["octavia"]
   keystone             = module.keystone.name
   keystone-ops         = module.keystone.name
   keystone-cacerts     = module.keystone.name
@@ -795,22 +779,6 @@ resource "juju_application" "bind" {
   units  = var.ha-scale
 }
 
-module "mysql-designate" {
-  count                 = var.enable-designate ? (var.many-mysql ? 1 : 0) : 0
-  source                = "./modules/mysql"
-  model                 = juju_model.sunbeam.name
-  name                  = "mysql"
-  channel               = var.mysql-channel
-  revision              = var.mysql-revision
-  scale                 = var.ha-scale
-  many-mysql            = var.many-mysql
-  services              = ["designate"]
-  resource-configs      = var.mysql-config
-  grafana-dashboard-app = local.grafana-agent-name
-  metrics-endpoint-app  = local.grafana-agent-name
-  logging-app           = local.grafana-agent-name
-}
-
 module "designate" {
   count                = var.enable-designate ? 1 : 0
   source               = "./modules/openstack-api"
@@ -820,7 +788,7 @@ module "designate" {
   channel              = var.designate-channel == null ? var.openstack-channel : var.designate-channel
   revision             = var.designate-revision
   rabbitmq             = module.rabbitmq.name
-  mysql                = var.many-mysql ? module.mysql-designate[0].name["designate"] : "mysql"
+  mysql                = local.mysql["designate"]
   keystone             = module.keystone.name
   keystone-cacerts     = module.keystone.name
   ingress-internal     = juju_application.traefik.name
@@ -878,22 +846,6 @@ resource "juju_application" "vault" {
   units  = 1
 }
 
-module "mysql-barbican" {
-  count                 = var.enable-barbican ? (var.many-mysql ? 1 : 0) : 0
-  source                = "./modules/mysql"
-  model                 = juju_model.sunbeam.name
-  name                  = "mysql"
-  channel               = var.mysql-channel
-  revision              = var.mysql-revision
-  scale                 = var.ha-scale
-  many-mysql            = var.many-mysql
-  services              = ["barbican"]
-  resource-configs      = var.mysql-config
-  grafana-dashboard-app = local.grafana-agent-name
-  metrics-endpoint-app  = local.grafana-agent-name
-  logging-app           = local.grafana-agent-name
-}
-
 module "barbican" {
   count                = var.enable-barbican ? 1 : 0
   source               = "./modules/openstack-api"
@@ -903,7 +855,7 @@ module "barbican" {
   channel              = var.barbican-channel == null ? var.openstack-channel : var.barbican-channel
   revision             = var.barbican-revision
   rabbitmq             = module.rabbitmq.name
-  mysql                = var.many-mysql ? module.mysql-barbican[0].name["barbican"] : "mysql"
+  mysql                = local.mysql["barbican"]
   keystone             = module.keystone.name
   keystone-ops         = module.keystone.name
   keystone-cacerts     = module.keystone.name
@@ -931,22 +883,6 @@ resource "juju_integration" "barbican-to-vault" {
   }
 }
 
-module "mysql-magnum" {
-  count                 = var.enable-magnum ? (var.many-mysql ? 1 : 0) : 0
-  source                = "./modules/mysql"
-  model                 = juju_model.sunbeam.name
-  name                  = "mysql"
-  channel               = var.mysql-channel
-  revision              = var.mysql-revision
-  scale                 = var.ha-scale
-  many-mysql            = var.many-mysql
-  services              = ["magnum"]
-  resource-configs      = var.mysql-config
-  grafana-dashboard-app = local.grafana-agent-name
-  metrics-endpoint-app  = local.grafana-agent-name
-  logging-app           = local.grafana-agent-name
-}
-
 module "magnum" {
   count                = var.enable-magnum ? 1 : 0
   source               = "./modules/openstack-api"
@@ -956,7 +892,7 @@ module "magnum" {
   channel              = var.magnum-channel == null ? var.openstack-channel : var.magnum-channel
   revision             = var.magnum-revision
   rabbitmq             = module.rabbitmq.name
-  mysql                = var.many-mysql ? module.mysql-magnum[0].name["magnum"] : "mysql"
+  mysql                = local.mysql["magnum"]
   keystone             = module.keystone.name
   keystone-ops         = module.keystone.name
   keystone-cacerts     = module.keystone.name

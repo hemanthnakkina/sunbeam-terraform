@@ -26,8 +26,7 @@ terraform {
 
 # core mysql k8s operator
 resource "juju_application" "mysql" {
-  count       = var.many-mysql ? length(var.services) : 1
-  name        = var.many-mysql ? "${var.services[count.index]}-${var.name}" : var.name
+  name        = var.name
   trust       = true
   model       = var.model
   constraints = var.constraints
@@ -44,7 +43,7 @@ resource "juju_application" "mysql" {
 }
 
 resource "juju_integration" "mysql-to-metrics-endpoint" {
-  count = (var.metrics-endpoint-app != null) ? length(juju_application.mysql) : 0
+  count = (var.metrics-endpoint-app != null) ? 1 : 0
   model = var.model
 
   application {
@@ -59,7 +58,7 @@ resource "juju_integration" "mysql-to-metrics-endpoint" {
 }
 
 resource "juju_integration" "mysql-to-grafana-dashboard" {
-  count = (var.grafana-dashboard-app != null) ? length(juju_application.mysql) : 0
+  count = (var.grafana-dashboard-app != null) ? 1 : 0
   model = var.model
 
   application {
@@ -74,7 +73,7 @@ resource "juju_integration" "mysql-to-grafana-dashboard" {
 }
 
 resource "juju_integration" "mysql-to-logging" {
-  count = (var.logging-app != null) ? length(juju_application.mysql) : 0
+  count = (var.logging-app != null) ? 1 : 0
   model = var.model
 
   application {

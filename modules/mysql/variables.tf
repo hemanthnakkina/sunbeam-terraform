@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Canonical Ltd.
+# Copyright (c) 2024 Canonical Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,17 +46,6 @@ variable "scale" {
 variable "model" {
   description = "Juju model to deploy resources in"
   type        = string
-}
-
-variable "many-mysql" {
-  description = "Enabling this will switch architecture from one global mysql to one per service"
-  type        = bool
-  default     = false
-}
-
-variable "services" {
-  description = "List of services requiring a MySQL database."
-  type        = list(string)
 }
 
 variable "resource-configs" {
