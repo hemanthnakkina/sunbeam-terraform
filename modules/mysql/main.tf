@@ -47,7 +47,7 @@ resource "juju_integration" "mysql-to-metrics-endpoint" {
   model = var.model
 
   application {
-    name     = juju_application.mysql[count.index].name
+    name     = juju_application.mysql.name
     endpoint = "metrics-endpoint"
   }
 
@@ -62,7 +62,7 @@ resource "juju_integration" "mysql-to-grafana-dashboard" {
   model = var.model
 
   application {
-    name     = juju_application.mysql[count.index].name
+    name     = juju_application.mysql.name
     endpoint = "grafana-dashboard"
   }
 
@@ -77,7 +77,7 @@ resource "juju_integration" "mysql-to-logging" {
   model = var.model
 
   application {
-    name     = juju_application.mysql[count.index].name
+    name     = juju_application.mysql.name
     endpoint = "logging"
   }
 
