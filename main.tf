@@ -105,6 +105,7 @@ module "rabbitmq" {
 }
 
 module "glance" {
+  depends_on           = [module.single-mysql, module.many-mysql]
   source               = "./modules/openstack-api"
   charm                = "glance-k8s"
   name                 = "glance"
@@ -128,6 +129,7 @@ module "glance" {
 }
 
 module "keystone" {
+  depends_on           = [module.single-mysql, module.many-mysql]
   source               = "./modules/openstack-api"
   charm                = "keystone-k8s"
   name                 = "keystone"
@@ -147,6 +149,7 @@ module "keystone" {
 }
 
 module "nova" {
+  depends_on           = [module.single-mysql, module.many-mysql]
   source               = "./modules/openstack-api"
   charm                = "nova-k8s"
   name                 = "nova"
@@ -195,6 +198,7 @@ resource "juju_integration" "nova-to-ingress-internal" {
 }
 
 module "horizon" {
+  depends_on           = [module.single-mysql, module.many-mysql]
   source               = "./modules/openstack-api"
   charm                = "horizon-k8s"
   name                 = "horizon"
@@ -214,6 +218,7 @@ module "horizon" {
 }
 
 module "neutron" {
+  depends_on           = [module.single-mysql, module.many-mysql]
   source               = "./modules/openstack-api"
   charm                = "neutron-k8s"
   name                 = "neutron"
@@ -234,6 +239,7 @@ module "neutron" {
 }
 
 module "placement" {
+  depends_on           = [module.single-mysql, module.many-mysql]
   source               = "./modules/openstack-api"
   charm                = "placement-k8s"
   name                 = "placement"
@@ -374,6 +380,7 @@ resource "juju_integration" "glance-to-ceph" {
 }
 
 module "cinder" {
+  depends_on           = [module.single-mysql, module.many-mysql]
   source               = "./modules/openstack-api"
   charm                = "cinder-k8s"
   name                 = "cinder"
@@ -394,6 +401,7 @@ module "cinder" {
 }
 
 module "cinder-ceph" {
+  depends_on           = [module.single-mysql, module.many-mysql]
   source               = "./modules/openstack-api"
   charm                = "cinder-ceph-k8s"
   name                 = "cinder-ceph"
@@ -448,6 +456,7 @@ resource "juju_offer" "ca-offer" {
 }
 
 module "heat" {
+  depends_on           = [module.single-mysql, module.many-mysql]
   count                = var.enable-heat ? 1 : 0
   source               = "./modules/openstack-api"
   charm                = "heat-k8s"
@@ -500,6 +509,7 @@ resource "juju_integration" "heat-to-ingress-internal" {
 }
 
 module "aodh" {
+  depends_on           = [module.single-mysql, module.many-mysql]
   count                = var.enable-telemetry ? 1 : 0
   source               = "./modules/openstack-api"
   charm                = "aodh-k8s"
@@ -521,6 +531,7 @@ module "aodh" {
 }
 
 module "gnocchi" {
+  depends_on           = [module.single-mysql, module.many-mysql]
   count                = var.enable-telemetry ? 1 : 0
   source               = "./modules/openstack-api"
   charm                = "gnocchi-k8s"
@@ -712,6 +723,7 @@ resource "juju_integration" "openstack-exporter-to-grafana-dashboard" {
 }
 
 module "octavia" {
+  depends_on           = [module.single-mysql, module.many-mysql]
   count                = var.enable-octavia ? 1 : 0
   source               = "./modules/openstack-api"
   charm                = "octavia-k8s"
@@ -780,6 +792,7 @@ resource "juju_application" "bind" {
 }
 
 module "designate" {
+  depends_on           = [module.single-mysql, module.many-mysql]
   count                = var.enable-designate ? 1 : 0
   source               = "./modules/openstack-api"
   charm                = "designate-k8s"
@@ -847,6 +860,7 @@ resource "juju_application" "vault" {
 }
 
 module "barbican" {
+  depends_on           = [module.single-mysql, module.many-mysql]
   count                = var.enable-barbican ? 1 : 0
   source               = "./modules/openstack-api"
   charm                = "barbican-k8s"
@@ -884,6 +898,7 @@ resource "juju_integration" "barbican-to-vault" {
 }
 
 module "magnum" {
+  depends_on           = [module.single-mysql, module.many-mysql]
   count                = var.enable-magnum ? 1 : 0
   source               = "./modules/openstack-api"
   charm                = "magnum-k8s"
