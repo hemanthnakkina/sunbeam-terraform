@@ -25,6 +25,11 @@ output "keystone-offer-url" {
   value       = one(module.keystone.keystone-offer-url[*])
 }
 
+output "keystone-endpoints-offer-url" {
+  description = "URL of the keystone endpoints offer"
+  value       = one(module.keystone.keystone-endpoints-offer-url[*])
+}
+
 output "rabbitmq-offer-url" {
   description = "URL of the RabbitMQ offer"
   value       = module.rabbitmq.rabbitmq-offer-url
@@ -53,4 +58,9 @@ output "cert-distributor-offer-url" {
 output "nova-offer-url" {
   description = "URL of the nova service offer"
   value       = one(module.nova.nova-offer-url[*])
+}
+
+output "ingress-rgw-offer-url" {
+  description = "URL of the RGW ingress offer"
+  value       = one(juju_offer.ingress-rgw-offer[*].url)
 }

@@ -285,6 +285,15 @@ resource "juju_offer" "keystone-offer" {
   model            = var.model
   application_name = juju_application.service.name
   endpoint         = "identity-credentials"
+  name             = "keystone-credentials"
+}
+
+resource "juju_offer" "keystone-endpoints-offer" {
+  count            = var.name == "keystone" ? 1 : 0
+  model            = var.model
+  application_name = juju_application.service.name
+  endpoint         = "identity-service"
+  name             = "keystone-endpoints"
 }
 
 resource "juju_offer" "cinder-ceph-offer" {
