@@ -288,6 +288,29 @@ resource "juju_application" "traefik-public" {
   units  = var.ingress-scale
 }
 
+resource "juju_application" "traefik-rgw" {
+  count = var.enable-ceph ? 1 : 0
+  name  = "traefik-rgw"
+  trust = true
+  model = juju_model.sunbeam.name
+
+  charm {
+    name     = "traefik-k8s"
+    channel  = var.traefik-channel
+    revision = var.traefik-revision
+  }
+
+  config = var.traefik-config
+  units  = var.ingress-scale
+}
+
+resource "juju_offer" "ingress-rgw-offer" {
+  count            = var.enable-ceph ? 1 : 0
+  model            = juju_model.sunbeam.name
+  application_name = juju_application.traefik-rgw[count.index].name
+  endpoint         = "traefik-route"
+}
+
 resource "juju_application" "certificate-authority" {
   name  = "certificate-authority"
   trust = true
