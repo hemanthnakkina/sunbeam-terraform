@@ -687,6 +687,11 @@ variable "enable-tls-for-internal-endpoint" {
   default     = false
 }
 
+variable "enable-tls-for-rgw-endpoint" {
+  description = "Enable TLS for traefik rgw"
+  type        = bool
+  default     = false
+}
 
 variable "enable-validation" {
   description = "Enable Tempest deployment"
