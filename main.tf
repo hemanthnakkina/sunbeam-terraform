@@ -1064,6 +1064,21 @@ resource "juju_integration" "traefik-to-tls-provider" {
   }
 }
 
+resource "juju_integration" "traefik-rgw-to-tls-provider" {
+  count = (var.enable-ceph && var.enable-tls-for-rgw-endpoint) ? (var.traefik-to-tls-provider == null ? 0 : 1) : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.traefik-rgw[count.index].name
+    endpoint = "certificates"
+  }
+
+  application {
+    name     = var.traefik-to-tls-provider
+    endpoint = "certificates"
+  }
+}
+
 resource "juju_application" "tempest" {
   count = var.enable-validation ? 1 : 0
   name  = "tempest"
