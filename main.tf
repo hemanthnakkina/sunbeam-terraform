@@ -311,6 +311,51 @@ resource "juju_offer" "ingress-rgw-offer" {
   endpoint         = "traefik-route"
 }
 
+resource "juju_integration" "traefik-rgw-to-metrics-endpoint" {
+  count = (var.enable-ceph && var.enable-observability) ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.traefik-rgw[count.index].name
+    endpoint = "metrics-endpoint"
+  }
+
+  application {
+    name     = juju_application.grafana-agent[count.index].name
+    endpoint = "metrics-endpoint"
+  }
+}
+
+resource "juju_integration" "traefik-rgw-to-grafana-dashboard" {
+  count = (var.enable-ceph && var.enable-observability) ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.traefik-rgw[count.index].name
+    endpoint = "grafana-dashboard"
+  }
+
+  application {
+    name     = juju_application.grafana-agent[count.index].name
+    endpoint = "grafana-dashboards-consumer"
+  }
+}
+
+resource "juju_integration" "traefik-rgw-to-grafana-agent-loki" {
+  count = (var.enable-ceph && var.enable-observability) ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.traefik-rgw[count.index].name
+    endpoint = "logging"
+  }
+
+  application {
+    name     = juju_application.grafana-agent[count.index].name
+    endpoint = "logging-provider"
+  }
+}
+
 resource "juju_application" "certificate-authority" {
   name  = "certificate-authority"
   trust = true
