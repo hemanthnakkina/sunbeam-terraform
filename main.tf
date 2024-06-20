@@ -273,6 +273,51 @@ resource "juju_application" "traefik" {
   units  = var.ingress-scale
 }
 
+resource "juju_integration" "traefik-internal-to-metrics-endpoint" {
+  count = var.enable-observability ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.traefik.name
+    endpoint = "metrics-endpoint"
+  }
+
+  application {
+    name     = juju_application.grafana-agent[count.index].name
+    endpoint = "metrics-endpoint"
+  }
+}
+
+resource "juju_integration" "traefik-internal-to-grafana-dashboard" {
+  count = var.enable-observability ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.traefik.name
+    endpoint = "grafana-dashboard"
+  }
+
+  application {
+    name     = juju_application.grafana-agent[count.index].name
+    endpoint = "grafana-dashboards-consumer"
+  }
+}
+
+resource "juju_integration" "traefik-internal-to-grafana-agent-loki" {
+  count = var.enable-observability ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.traefik.name
+    endpoint = "logging"
+  }
+
+  application {
+    name     = juju_application.grafana-agent[count.index].name
+    endpoint = "logging-provider"
+  }
+}
+
 resource "juju_application" "traefik-public" {
   name  = "traefik-public"
   trust = true
@@ -286,6 +331,51 @@ resource "juju_application" "traefik-public" {
 
   config = var.traefik-config
   units  = var.ingress-scale
+}
+
+resource "juju_integration" "traefik-public-to-metrics-endpoint" {
+  count = var.enable-observability ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.traefik-public.name
+    endpoint = "metrics-endpoint"
+  }
+
+  application {
+    name     = juju_application.grafana-agent[count.index].name
+    endpoint = "metrics-endpoint"
+  }
+}
+
+resource "juju_integration" "traefik-public-to-grafana-dashboard" {
+  count = var.enable-observability ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.traefik-public.name
+    endpoint = "grafana-dashboard"
+  }
+
+  application {
+    name     = juju_application.grafana-agent[count.index].name
+    endpoint = "grafana-dashboards-consumer"
+  }
+}
+
+resource "juju_integration" "traefik-public-to-grafana-agent-loki" {
+  count = var.enable-observability ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.traefik-public.name
+    endpoint = "logging"
+  }
+
+  application {
+    name     = juju_application.grafana-agent[count.index].name
+    endpoint = "logging-provider"
+  }
 }
 
 resource "juju_application" "traefik-rgw" {
