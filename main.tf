@@ -121,6 +121,7 @@ module "glance" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.enable-ceph ? var.os-api-scale : 1
   mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
   resource-configs = merge(var.glance-config, {
     ceph-osd-replication-count     = var.ceph-osd-replication-count
     enable-telemetry-notifications = var.enable-telemetry
@@ -142,6 +143,7 @@ module "keystone" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
   resource-configs = merge(var.keystone-config, {
     enable-telemetry-notifications = var.enable-telemetry
     region                         = var.region
@@ -164,6 +166,7 @@ module "nova" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
   resource-configs = merge(var.nova-config, {
     region = var.region
   })
@@ -212,6 +215,7 @@ module "horizon" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
   resource-configs = merge(var.horizon-config, {
     plugins = jsonencode(var.horizon-plugins)
   })
@@ -233,6 +237,7 @@ module "neutron" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
   resource-configs = merge(var.neutron-config, {
     region = var.region
   })
@@ -253,6 +258,7 @@ module "placement" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
   resource-configs = merge(var.placement-config, {
     region = var.region
   })
@@ -475,6 +481,7 @@ module "ovn" {
   ca                     = juju_application.certificate-authority.name
   resource-configs       = var.ovn-central-config
   relay-resource-configs = var.ovn-relay-config
+  logging-app            = local.grafana-agent-name
 }
 
 # juju integrate ovn-central neutron
@@ -553,6 +560,7 @@ module "cinder" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
   resource-configs = merge(var.cinder-config, {
     region = var.region
   })
@@ -573,6 +581,7 @@ module "cinder-ceph" {
   ingress-public       = ""
   scale                = var.ha-scale
   mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
   resource-configs = merge(var.cinder-ceph-config, {
     ceph-osd-replication-count     = var.ceph-osd-replication-count
     enable-telemetry-notifications = var.enable-telemetry
@@ -631,6 +640,7 @@ module "heat" {
   ingress-public       = ""
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
   resource-configs = merge(var.heat-config, {
     region = var.region
   })
@@ -683,6 +693,7 @@ module "aodh" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
   resource-configs = merge(var.aodh-config, {
     region = var.region
   })
@@ -704,6 +715,7 @@ module "gnocchi" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
   resource-configs = merge(var.gnocchi-config, {
     ceph-osd-replication-count = var.ceph-osd-replication-count
     region                     = var.region
@@ -798,6 +810,21 @@ resource "juju_integration" "ceilometer-to-gnocchi" {
   }
 }
 
+resource "juju_integration" "ceilometer-to-logging" {
+  count = (local.grafana-agent-name != null && length(juju_application.ceilometer) > 0) ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.ceilometer[count.index].name
+    endpoint = "logging"
+  }
+
+  application {
+    name     = local.grafana-agent-name
+    endpoint = "logging-provider"
+  }
+}
+
 resource "juju_offer" "ceilometer-offer" {
   count            = var.enable-telemetry ? 1 : 0
   model            = juju_model.sunbeam.name
@@ -880,6 +907,21 @@ resource "juju_integration" "openstack-exporter-to-grafana-dashboard" {
   }
 }
 
+resource "juju_integration" "openstack-exporter-to-logging" {
+  count = (local.grafana-agent-name != null && length(juju_application.openstack-exporter) > 0) ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.openstack-exporter[count.index].name
+    endpoint = "logging"
+  }
+
+  application {
+    name     = local.grafana-agent-name
+    endpoint = "logging-provider"
+  }
+}
+
 module "octavia" {
   depends_on           = [module.single-mysql, module.many-mysql]
   count                = var.enable-octavia ? 1 : 0
@@ -897,6 +939,7 @@ module "octavia" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
   resource-configs = merge(var.octavia-config, {
     region = var.region
   })
@@ -949,6 +992,21 @@ resource "juju_application" "bind" {
   units  = var.ha-scale
 }
 
+resource "juju_integration" "bind-to-logging" {
+  count = (local.grafana-agent-name != null && length(juju_application.bind) > 0) ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.bind[count.index].name
+    endpoint = "logging"
+  }
+
+  application {
+    name     = local.grafana-agent-name
+    endpoint = "logging-provider"
+  }
+}
+
 module "designate" {
   depends_on           = [module.single-mysql, module.many-mysql]
   count                = var.enable-designate ? 1 : 0
@@ -966,6 +1024,7 @@ module "designate" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
   resource-configs = merge(var.designate-config, {
     "nameservers" = var.nameservers
     region        = var.region
@@ -1035,6 +1094,7 @@ module "barbican" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
   resource-configs = merge(var.barbican-config, {
     region = var.region
   })
@@ -1073,6 +1133,7 @@ module "magnum" {
   ingress-public       = juju_application.traefik-public.name
   scale                = var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
   resource-configs = merge(var.magnum-config, {
     "cluster-user-trust" = "true"
     region               = var.region
@@ -1092,6 +1153,21 @@ resource "juju_application" "ldap-apps" {
   # This is a config charm so 1 unit is enough
   units  = 1
   config = each.value
+}
+
+resource "juju_integration" "ldap-apps-to-logging" {
+  for_each = local.grafana-agent-name != null ? var.ldap-apps : {}
+  model    = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.ldap-apps[each.key].name
+    endpoint = "logging"
+  }
+
+  application {
+    name     = local.grafana-agent-name
+    endpoint = "logging-provider"
+  }
 }
 
 resource "juju_integration" "ldap-to-keystone" {
@@ -1345,5 +1421,20 @@ resource "juju_integration" "images-sync-to-traefik-public" {
   application {
     name     = juju_application.images-sync[count.index].name
     endpoint = "ingress-public"
+  }
+}
+
+resource "juju_integration" "images-sync-to-logging" {
+  count = (local.grafana-agent-name != null && length(juju_application.images-sync) > 0) ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.images-sync[count.index].name
+    endpoint = "logging"
+  }
+
+  application {
+    name     = local.grafana-agent-name
+    endpoint = "logging-provider"
   }
 }

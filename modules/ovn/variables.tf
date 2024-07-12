@@ -77,3 +77,9 @@ variable "ca" {
   type        = string
   default     = ""
 }
+
+variable "logging-app" {
+  description = "Name of application providing logging endpoint"
+  type        = string
+  default     = null
+}

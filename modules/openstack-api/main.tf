@@ -280,6 +280,21 @@ resource "juju_integration" "nova-cell-to-mysql-router" {
   }
 }
 
+resource "juju_integration" "service-to-logging" {
+  count = (var.logging-app != null) ? 1 : 0
+  model = var.model
+
+  application {
+    name     = juju_application.service.name
+    endpoint = "logging"
+  }
+
+  application {
+    name     = var.logging-app
+    endpoint = "logging-provider"
+  }
+}
+
 resource "juju_offer" "keystone-offer" {
   count            = var.name == "keystone" ? 1 : 0
   model            = var.model

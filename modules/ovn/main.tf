@@ -99,6 +99,36 @@ resource "juju_integration" "ovn-relay-to-ca" {
   }
 }
 
+resource "juju_integration" "ovn-central-to-logging" {
+  count = (var.logging-app != null) ? 1 : 0
+  model = var.model
+
+  application {
+    name     = juju_application.ovn-central.name
+    endpoint = "logging"
+  }
+
+  application {
+    name     = var.logging-app
+    endpoint = "logging-provider"
+  }
+}
+
+resource "juju_integration" "ovn-relay-to-logging" {
+  count = (var.logging-app != null) ? 1 : 0
+  model = var.model
+
+  application {
+    name     = juju_application.ovn-relay[0].name
+    endpoint = "logging"
+  }
+
+  application {
+    name     = var.logging-app
+    endpoint = "logging-provider"
+  }
+}
+
 resource "juju_offer" "ovn-relay-offer" {
   count            = var.relay != "" ? 1 : 0
   model            = var.model
