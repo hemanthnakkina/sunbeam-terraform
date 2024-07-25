@@ -1275,6 +1275,21 @@ resource "juju_integration" "tempest-to-keystone" {
   }
 }
 
+resource "juju_integration" "tempest-to-keystone-cacert" {
+  count = var.enable-validation ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = module.keystone.name
+    endpoint = "send-ca-cert"
+  }
+
+  application {
+    name     = juju_application.tempest[count.index].name
+    endpoint = "receive-ca-cert"
+  }
+}
+
 resource "juju_integration" "tempest-to-grafana-agent-loki" {
   count = (var.enable-validation && var.enable-observability) ? 1 : 0
   model = juju_model.sunbeam.name
