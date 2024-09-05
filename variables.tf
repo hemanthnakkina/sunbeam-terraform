@@ -765,6 +765,30 @@ variable "images-sync-config" {
   description = "Operator config for openstack-images-sync deployment"
 }
 
+variable "enable-watcher" {
+  description = "Enable OpenStack Watcher service"
+  type        = bool
+  default     = false
+}
+
+variable "watcher-channel" {
+  description = "Operator channel for Watcher deployment"
+  type        = string
+  default     = null
+}
+
+variable "watcher-revision" {
+  description = "Operator channel revision for Watcher deployment"
+  type        = number
+  default     = null
+}
+
+variable "watcher-config" {
+  description = "Operator config for Watcher deployment"
+  type        = map(string)
+  default     = {}
+}
+
 variable "region" {
   description = "Region name"
   type        = string

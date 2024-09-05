@@ -42,6 +42,7 @@ locals {
     octavia   = var.many-mysql && var.enable-octavia ? lookup(var.mysql-config-map, "octavia", {}) : null,
     designate = var.many-mysql && var.enable-designate ? lookup(var.mysql-config-map, "designate", {}) : null,
     barbican  = var.many-mysql && var.enable-barbican ? lookup(var.mysql-config-map, "barbican", {}) : null,
+    watcher   = var.many-mysql && var.enable-watcher ? lookup(var.mysql-config-map, "watcher", {}) : null,
   }
   single-mysql = "mysql"
   mysql = {
@@ -1451,5 +1452,44 @@ resource "juju_integration" "images-sync-to-logging" {
   application {
     name     = local.grafana-agent-name
     endpoint = "logging-provider"
+  }
+}
+
+module "watcher" {
+  depends_on           = [module.single-mysql, module.many-mysql]
+  count                = var.enable-watcher ? 1 : 0
+  source               = "./modules/openstack-api"
+  charm                = "watcher-k8s"
+  name                 = "watcher"
+  model                = juju_model.sunbeam.name
+  channel              = var.watcher-channel == null ? var.openstack-channel : var.watcher-channel
+  revision             = var.watcher-revision
+  rabbitmq             = module.rabbitmq.name
+  mysql                = local.mysql["watcher"]
+  keystone             = module.keystone.name
+  keystone-cacerts     = module.keystone.name
+  ingress-internal     = juju_application.traefik.name
+  ingress-public       = juju_application.traefik-public.name
+  scale                = var.os-api-scale
+  mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
+  resource-configs = merge(var.watcher-config, {
+    enable-telemetry-notifications = var.enable-telemetry
+    region                         = var.region
+  })
+}
+
+resource "juju_integration" "watcher-to-gnocchi" {
+  count = (var.enable-watcher && var.enable-telemetry) ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = module.gnocchi[count.index].name
+    endpoint = "gnocchi-service"
+  }
+
+  application {
+    name     = module.watcher[count.index].name
+    endpoint = "gnocchi-db"
   }
 }
