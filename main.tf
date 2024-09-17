@@ -19,7 +19,7 @@ terraform {
   required_providers {
     juju = {
       source  = "juju/juju"
-      version = "= 0.13.0"
+      version = "= 0.14.0"
     }
   }
 }
@@ -42,7 +42,7 @@ locals {
     octavia   = var.many-mysql && var.enable-octavia ? { "configs" : lookup(var.mysql-config-map, "octavia", {}), "storages" : lookup(var.mysql-storage-map, "octavia", {}) } : null,
     designate = var.many-mysql && var.enable-designate ? { "configs" : lookup(var.mysql-config-map, "designate", {}), "storages" : lookup(var.mysql-storage-map, "designate", {}) } : null,
     barbican  = var.many-mysql && var.enable-barbican ? { "configs" : lookup(var.mysql-config-map, "barbican", {}), "storages" : lookup(var.mysql-storage-map, "barbican", {}) } : null,
-    watcher  = var.many-mysql && var.enable-watcher ? { "configs" : lookup(var.mysql-config-map, "watcher", {}), "storages" : lookup(var.mysql-storage-map, "watcher", {}) } : null,
+    watcher   = var.many-mysql && var.enable-watcher ? { "configs" : lookup(var.mysql-config-map, "watcher", {}), "storages" : lookup(var.mysql-storage-map, "watcher", {}) } : null,
   }
   single-mysql = "mysql"
   mysql = {
