@@ -61,7 +61,7 @@ resource "juju_model" "sunbeam" {
 
   cloud {
     name   = var.cloud
-    region = "localhost"
+    region = var.cloud-region
   }
 
   credential = var.credential
