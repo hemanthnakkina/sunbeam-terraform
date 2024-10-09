@@ -25,6 +25,12 @@ variable "revision" {
   default     = null
 }
 
+variable "base" {
+  description = "Operator base"
+  type        = string
+  default     = "ubuntu@24.04"
+}
+
 variable "resource-configs" {
   description = "Operator config for OVN Central"
   type        = map(string)

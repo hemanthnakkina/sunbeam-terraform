@@ -30,6 +30,12 @@ variable "revision" {
   default     = null
 }
 
+variable "base" {
+  description = "Operator base"
+  type        = string
+  default     = "ubuntu@24.04"
+}
+
 variable "mysql-router-channel" {
   description = "Operator channel for MySQL router deployment"
   type        = string

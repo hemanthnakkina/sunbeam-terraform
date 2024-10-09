@@ -32,6 +32,7 @@ resource "juju_application" "ovn-central" {
     name     = "ovn-central-k8s"
     channel  = var.channel
     revision = var.revision
+    base     = var.base
   }
 
   config             = var.resource-configs
@@ -49,6 +50,7 @@ resource "juju_application" "ovn-relay" {
     name     = "ovn-relay-k8s"
     channel  = var.relay-channel
     revision = var.relay-revision
+    base     = var.base
   }
 
   config = var.relay-resource-configs

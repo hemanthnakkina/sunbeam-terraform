@@ -754,6 +754,7 @@ resource "juju_application" "ceilometer" {
     name     = "ceilometer-k8s"
     channel  = var.ceilometer-channel == null ? var.openstack-channel : var.ceilometer-channel
     revision = var.ceilometer-revision
+    base     = "ubuntu@24.04"
   }
 
   config = merge(var.ceilometer-config, { region = var.region })
@@ -851,6 +852,7 @@ resource "juju_application" "openstack-exporter" {
     name     = "openstack-exporter-k8s"
     channel  = var.openstack-exporter-channel == null ? var.openstack-channel : var.openstack-exporter-channel
     revision = var.openstack-exporter-revision
+    base     = "ubuntu@24.04"
   }
 
   config = merge(var.openstack-exporter-config, { region = var.region })
@@ -997,6 +999,7 @@ resource "juju_application" "bind" {
     name     = "designate-bind-k8s"
     channel  = var.bind-channel
     revision = var.bind-revision
+    base     = "ubuntu@24.04"
   }
 
   config = var.bind-config
@@ -1161,6 +1164,7 @@ resource "juju_application" "ldap-apps" {
     name     = "keystone-ldap-k8s"
     channel  = var.ldap-channel
     revision = var.ldap-revision
+    base     = "ubuntu@24.04"
   }
   # This is a config charm so 1 unit is enough
   units  = 1
@@ -1266,6 +1270,7 @@ resource "juju_application" "tempest" {
     name     = "tempest-k8s"
     channel  = var.tempest-channel == null ? var.openstack-channel : var.tempest-channel
     revision = var.tempest-revision
+    base     = "ubuntu@24.04"
   }
 
   units  = 1
@@ -1400,6 +1405,7 @@ resource "juju_application" "images-sync" {
     name     = "openstack-images-sync-k8s"
     channel  = var.images-sync-channel == null ? var.openstack-channel : var.images-sync-channel
     revision = var.images-sync-revision
+    base     = "ubuntu@24.04"
   }
 
   units  = 1

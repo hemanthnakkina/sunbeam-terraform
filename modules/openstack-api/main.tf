@@ -33,6 +33,7 @@ resource "juju_application" "service" {
     name     = var.charm
     channel  = var.channel
     revision = var.revision
+    base     = var.base
   }
 
   config = var.resource-configs
