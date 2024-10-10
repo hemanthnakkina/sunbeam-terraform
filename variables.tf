@@ -345,6 +345,12 @@ variable "cloud" {
   default     = "microk8s"
 }
 
+variable "cloud-region" {
+  description = "Name of cloud region to use for deployment"
+  type        = string
+  default     = "localhost"
+}
+
 # https://github.com/juju/terraform-provider-juju/issues/147
 variable "credential" {
   description = "Name of credential to use for deployment"
