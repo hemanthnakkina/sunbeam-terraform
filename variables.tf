@@ -843,6 +843,48 @@ variable "watcher-config" {
   default     = {}
 }
 
+variable "enable-consul-management" {
+  description = "Enable Consul to track clients running on management network"
+  type        = bool
+  default     = false
+}
+
+variable "enable-consul-tenant" {
+  description = "Enable Consul to track clients running on tenant network"
+  type        = bool
+  default     = false
+}
+
+variable "enable-consul-storage" {
+  description = "Enable Consul to track clients running on storage network"
+  type        = bool
+  default     = false
+}
+
+variable "consul-channel" {
+  description = "Operator channel for Consul K8S deployment"
+  type        = string
+  default     = null
+}
+
+variable "consul-revision" {
+  description = "Operator channel revision for Consul K8S deployment"
+  type        = number
+  default     = null
+}
+
+variable "consul-config" {
+  description = "Operator config for Consul K8S deployment"
+  type        = map(string)
+  default     = {}
+}
+
+variable "consul-storage" {
+  description = "Operator storage directives for Consul K8S deployment"
+  type        = map(string)
+  default     = {}
+}
+
 variable "region" {
   description = "Region name"
   type        = string

@@ -1504,3 +1504,39 @@ resource "juju_integration" "watcher-to-gnocchi" {
     endpoint = "gnocchi-db"
   }
 }
+
+module "consul-management" {
+  count             = var.enable-consul-management ? 1 : 0
+  source            = "./modules/consul"
+  model             = juju_model.sunbeam.name
+  name              = "consul-management"
+  scale             = var.ha-scale
+  channel           = var.consul-channel
+  revision          = var.consul-revision
+  resource-configs  = var.consul-config
+  resource-storages = var.consul-storage
+}
+
+module "consul-tenant" {
+  count             = var.enable-consul-tenant ? 1 : 0
+  source            = "./modules/consul"
+  model             = juju_model.sunbeam.name
+  name              = "consul-tenant"
+  scale             = var.ha-scale
+  channel           = var.consul-channel
+  revision          = var.consul-revision
+  resource-configs  = var.consul-config
+  resource-storages = var.consul-storage
+}
+
+module "consul-storage" {
+  count             = var.enable-consul-storage ? 1 : 0
+  source            = "./modules/consul"
+  model             = juju_model.sunbeam.name
+  name              = "consul-storage"
+  scale             = var.ha-scale
+  channel           = var.consul-channel
+  revision          = var.consul-revision
+  resource-configs  = var.consul-config
+  resource-storages = var.consul-storage
+}
