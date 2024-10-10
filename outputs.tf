@@ -64,3 +64,18 @@ output "ingress-rgw-offer-url" {
   description = "URL of the RGW ingress offer"
   value       = one(juju_offer.ingress-rgw-offer[*].url)
 }
+
+output "consul-management-cluster-offer-url" {
+  description = "URL of the Consul Management cluster offer"
+  value       = one(module.consul-management[*].consul-cluster-offer-url)
+}
+
+output "consul-tenant-cluster-offer-url" {
+  description = "URL of the Consul Tenant cluster offer"
+  value       = one(module.consul-tenant[*].consul-cluster-offer-url)
+}
+
+output "consul-storage-cluster-offer-url" {
+  description = "URL of the Consul Storage cluster offer"
+  value       = one(module.consul-storage[*].consul-cluster-offer-url)
+}

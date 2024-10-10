@@ -11,3 +11,4 @@ manual-tls-certificates-channel = "latest/candidate"
 bind-channel                    = "9/edge"    # No candidate release
 vault-channel                   = "1.15/edge" # No candidate release
 grafana-agent-channel           = "latest/candidate"
+consul-channel                  = "1.19/edge" # No candidate release
