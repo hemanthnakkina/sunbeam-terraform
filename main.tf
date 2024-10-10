@@ -1512,7 +1512,6 @@ resource "juju_integration" "watcher-to-gnocchi" {
   }
 }
 
-<<<<<<< HEAD
 module "consul-management" {
   count             = var.enable-consul-management ? 1 : 0
   source            = "./modules/consul"
@@ -1570,4 +1569,56 @@ module "masakari" {
   resource-configs = merge(var.masakari-config, {
     region = var.region
   })
+}
+
+resource "juju_integration" "masakari-to-consul-management" {
+  count = (var.enable-masakari && var.enable-consul-management) ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = module.masakari[count.index].name
+    endpoint = "consul-management"
+  }
+
+  application {
+    name     = module.consul-management[count.index].name
+    endpoint = "consul-cluster"
+  }
+}
+
+resource "juju_integration" "masakari-to-consul-tenant" {
+  count = (var.enable-masakari && var.enable-consul-tenant) ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = module.masakari[count.index].name
+    endpoint = "consul-tenant"
+  }
+
+  application {
+    name     = module.consul-tenant[count.index].name
+    endpoint = "consul-cluster"
+  }
+}
+
+resource "juju_integration" "masakari-to-consul-storage" {
+  count = (var.enable-masakari && var.enable-consul-storage) ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = module.masakari[count.index].name
+    endpoint = "consul-storage"
+  }
+
+  application {
+    name     = module.consul-storage[count.index].name
+    endpoint = "consul-cluster"
+  }
+}
+
+resource "juju_offer" "masakari-offer" {
+  count            = var.enable-masakari ? 1 : 0
+  model            = juju_model.sunbeam.name
+  application_name = module.masakari[count.index].name
+  endpoint         = "masakari-service"
 }
