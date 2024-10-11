@@ -1520,7 +1520,7 @@ module "consul-management" {
   scale             = var.ha-scale
   channel           = var.consul-channel
   revision          = var.consul-revision
-  resource-configs  = var.consul-config
+  resource-configs  = merge(var.consul-config, lookup(var.consul-config-map, "consul-management", {}))
   resource-storages = var.consul-storage
 }
 
@@ -1532,7 +1532,7 @@ module "consul-tenant" {
   scale             = var.ha-scale
   channel           = var.consul-channel
   revision          = var.consul-revision
-  resource-configs  = var.consul-config
+  resource-configs  = merge(var.consul-config, lookup(var.consul-config-map, "consul-tenant", {}))
   resource-storages = var.consul-storage
 }
 
@@ -1544,7 +1544,7 @@ module "consul-storage" {
   scale             = var.ha-scale
   channel           = var.consul-channel
   revision          = var.consul-revision
-  resource-configs  = var.consul-config
+  resource-configs  = merge(var.consul-config, lookup(var.consul-config-map, "consul-storage", {}))
   resource-storages = var.consul-storage
 }
 
