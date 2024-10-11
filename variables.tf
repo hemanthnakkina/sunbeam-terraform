@@ -909,6 +909,12 @@ variable "consul-config" {
   default     = {}
 }
 
+variable "consul-config-map" {
+  description = "Operator configs for specific Consul deployment (applied on top of consul-config for specific application)"
+  type        = map(map(string))
+  default     = {}
+}
+
 variable "consul-storage" {
   description = "Operator storage directives for Consul K8S deployment"
   type        = map(string)
