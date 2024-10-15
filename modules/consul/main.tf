@@ -45,6 +45,6 @@ resource "juju_application" "consul" {
 
 resource "juju_offer" "consul-cluster-offer" {
   model            = var.model
-  application_name = var.name
+  application_name = juju_application.consul.name
   endpoint         = "consul-cluster"
 }
