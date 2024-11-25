@@ -28,7 +28,7 @@ jobs:
           terraform init
           terraform apply -auto-approve -var-file=channels/edge.tfvars
           juju model-config -m openstack automatically-retry-hooks=true
-          juju-wait -vw -m openstack -t 3600 -x cinder-ceph -r 3
+          juju-wait -vw -m openstack -t 3600 -x cinder-ceph -x vault -x barbican -r 3
       - name: Collect juju status
         if: always()
         run: |
