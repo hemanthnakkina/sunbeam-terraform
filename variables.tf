@@ -642,13 +642,13 @@ variable "enable-vault" {
 variable "vault-channel" {
   description = "Operator channel for Vault deployment"
   type        = string
-  default     = "1.15/edge"
+  default     = "1.16/stable"
 }
 
 variable "vault-revision" {
   description = "Operator channel revision for Vault deployment"
   type        = number
-  default     = 61
+  default     = null
 }
 
 variable "vault-config" {
