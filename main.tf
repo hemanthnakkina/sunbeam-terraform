@@ -525,21 +525,6 @@ resource "juju_integration" "neutron-to-ca" {
   }
 }
 
-# juju integrate nova placement
-resource "juju_integration" "nova-to-placement" {
-  model = juju_model.sunbeam.name
-
-  application {
-    name     = module.nova.name
-    endpoint = "placement"
-  }
-
-  application {
-    name     = module.placement.name
-    endpoint = "placement"
-  }
-}
-
 # juju integrate glance microceph
 resource "juju_integration" "glance-to-ceph" {
   count = length(data.juju_offer.microceph)
