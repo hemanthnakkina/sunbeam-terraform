@@ -994,6 +994,7 @@ resource "juju_integration" "octavia-to-ca" {
 resource "juju_application" "bind" {
   count = var.enable-designate ? 1 : 0
   name  = "bind"
+  trust = true
   model = juju_model.sunbeam.name
 
   charm {
