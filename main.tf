@@ -107,6 +107,7 @@ module "rabbitmq" {
   revision          = var.rabbitmq-revision
   resource-configs  = var.rabbitmq-config
   resource-storages = var.rabbitmq-storage
+  logging-app       = local.grafana-agent-name
 }
 
 module "glance" {
