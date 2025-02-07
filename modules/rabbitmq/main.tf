@@ -33,6 +33,7 @@ resource "juju_application" "rabbitmq" {
   charm {
     name    = "rabbitmq-k8s"
     channel = var.channel
+    base    = "ubuntu@24.04"
   }
 
   units = var.scale
