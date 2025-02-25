@@ -57,6 +57,11 @@ data "juju_offer" "microceph" {
   url   = var.ceph-offer-url
 }
 
+data "juju_offer" "cinder-volume" {
+  count = var.enable-cinder-volume ? 1 : 0
+  url   = var.cinder-volume-offer-url
+}
+
 resource "juju_model" "sunbeam" {
   name = var.model
 
@@ -578,30 +583,49 @@ module "cinder" {
   })
 }
 
-module "cinder-ceph" {
-  depends_on           = [module.single-mysql, module.many-mysql]
-  source               = "./modules/openstack-api"
-  charm                = "cinder-ceph-k8s"
-  name                 = "cinder-ceph"
-  model                = juju_model.sunbeam.name
-  channel              = var.cinder-ceph-channel == null ? var.openstack-channel : var.cinder-ceph-channel
-  revision             = var.cinder-ceph-revision
-  rabbitmq             = module.rabbitmq.name
-  mysql                = local.mysql["cinder"]
-  keystone-credentials = module.keystone.name
-  ingress-internal     = ""
-  ingress-public       = ""
-  scale                = var.ha-scale
-  mysql-router-channel = var.mysql-router-channel
-  logging-app          = local.grafana-agent-name
-  resource-configs = merge(var.cinder-ceph-config, {
-    ceph-osd-replication-count     = var.ceph-osd-replication-count
-    enable-telemetry-notifications = var.enable-telemetry
-  })
+# Cinder-volume MySQL router
+resource "juju_application" "cinder-volume-mysql-router" {
+  count = var.enable-cinder-volume ? 1 : 0
+  name  = "cinder-volume-mysql-router"
+  trust = true
+  model = juju_model.sunbeam.name
+
+  charm {
+    name    = "mysql-router-k8s"
+    channel = var.mysql-router-channel
+  }
+
+  units = var.ha-scale
+  config = {
+    "expose-external" = "loadbalancer"
+  }
 }
 
-# juju integrate cinder cinder-ceph
-resource "juju_integration" "cinder-to-cinder-ceph" {
+resource "juju_integration" "cinder-volume-mysql-router-to-mysql" {
+  count      = length(juju_application.cinder-volume-mysql-router)
+  depends_on = [module.single-mysql, module.many-mysql]
+  model      = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.cinder-volume-mysql-router[count.index].name
+    endpoint = "backend-database"
+  }
+
+  application {
+    name     = local.mysql["cinder"]
+    endpoint = "database"
+  }
+}
+
+resource "juju_offer" "cinder-volume-database-offer" {
+  count            = var.enable-cinder-volume ? 1 : 0
+  model            = juju_model.sunbeam.name
+  application_name = juju_application.cinder-volume-mysql-router[count.index].name
+  endpoint         = "database"
+}
+
+resource "juju_integration" "cinder-to-cinder-volume" {
+  count = length(data.juju_offer.cinder-volume)
   model = juju_model.sunbeam.name
 
   application {
@@ -610,21 +634,7 @@ resource "juju_integration" "cinder-to-cinder-ceph" {
   }
 
   application {
-    name     = module.cinder-ceph.name
-    endpoint = "storage-backend"
-  }
-}
-
-# juju integrate cinder-ceph microceph
-resource "juju_integration" "cinder-ceph-to-ceph" {
-  count = length(data.juju_offer.microceph)
-  model = juju_model.sunbeam.name
-  application {
-    name     = module.cinder-ceph.name
-    endpoint = "ceph"
-  }
-  application {
-    offer_url = data.juju_offer.microceph[count.index].url
+    offer_url = data.juju_offer.cinder-volume[count.index].url
   }
 }
 

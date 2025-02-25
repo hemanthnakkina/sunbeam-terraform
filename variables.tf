@@ -315,24 +315,6 @@ variable "cinder-config" {
   default     = {}
 }
 
-variable "cinder-ceph-channel" {
-  description = "Operator channel for Cinder Ceph deployment"
-  type        = string
-  default     = null
-}
-
-variable "cinder-ceph-revision" {
-  description = "Operator channel revision for Cinder Ceph deployment"
-  type        = number
-  default     = null
-}
-
-variable "cinder-ceph-config" {
-  description = "Operator config for Cinder Ceph deployment"
-  type        = map(string)
-  default     = {}
-}
-
 variable "model" {
   description = "Name of Juju model to use for deployment"
   type        = string
@@ -380,6 +362,18 @@ variable "ceph-osd-replication-count" {
   description = "Ceph OSD replication count to set on glance/cinder"
   type        = number
   default     = 1
+}
+
+variable "enable-cinder-volume" {
+  description = "Enable Cinder Volume integration"
+  type        = bool
+  default     = false
+}
+
+variable "cinder-volume-offer-url" {
+  description = "Offer URL from cinder-volume app"
+  type        = string
+  default     = "admin/controller.cinder-volume"
 }
 
 variable "ha-scale" {
