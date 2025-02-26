@@ -18,6 +18,7 @@ jobs:
           channel: 1.28-strict/stable
           juju-channel: 3.6/stable
           microk8s-addons: hostpath-storage dns rbac metallb:10.64.140.40-10.64.140.49
+          bootstrap-options: --config caas-image-repo=ghcr.io/juju
       - name: Install dependencies
         run: |
           sudo snap install --classic terraform
