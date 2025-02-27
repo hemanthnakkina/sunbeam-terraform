@@ -45,11 +45,6 @@ output "ceilometer-offer-url" {
   value       = one(juju_offer.ceilometer-offer[*].url)
 }
 
-output "cinder-ceph-offer-url" {
-  description = "URL of the cinder ceph offer"
-  value       = one(module.cinder-ceph.cinder-ceph-offer-url[*])
-}
-
 output "cert-distributor-offer-url" {
   description = "URL of the cert distributor offer"
   value       = one(module.keystone.cert-distributor-offer-url[*])
@@ -83,4 +78,9 @@ output "consul-storage-cluster-offer-url" {
 output "masakari-offer-url" {
   description = "URL of the masakari offer"
   value       = one(juju_offer.masakari-offer[*].url)
+}
+
+output "cinder-volume-database-offer-url" {
+  description = "URL of the cinder volume database offer"
+  value       = one(juju_offer.cinder-volume-database-offer[*].url)
 }

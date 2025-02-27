@@ -314,13 +314,6 @@ resource "juju_offer" "keystone-endpoints-offer" {
   name             = "keystone-endpoints"
 }
 
-resource "juju_offer" "cinder-ceph-offer" {
-  count            = var.name == "cinder-ceph" ? 1 : 0
-  model            = var.model
-  application_name = juju_application.service.name
-  endpoint         = "ceph-access"
-}
-
 resource "juju_offer" "cert-distributor-offer" {
   count            = var.name == "keystone" ? 1 : 0
   model            = var.model
