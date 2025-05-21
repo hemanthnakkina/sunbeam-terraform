@@ -114,7 +114,7 @@ variable "rabbitmq-storage" {
 variable "certificate-authority-channel" {
   description = "Operator channel for Certificate Authority deployment"
   type        = string
-  default     = "latest/beta"
+  default     = "1/stable"
 }
 
 variable "certificate-authority-revision" {
