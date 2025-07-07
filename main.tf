@@ -1649,3 +1649,48 @@ resource "juju_offer" "masakari-offer" {
   application_name = module.masakari[count.index].name
   endpoint         = "masakari-service"
 }
+
+resource "juju_integration" "keystone-to-trusted-dashboard-endpoint" {
+  count = var.keystone-to-trusted-dashboard ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = module.keystone.name
+    endpoint = "trusted-dashboard"
+  }
+
+  application {
+    name     = module.horizon.name
+    endpoint = "trusted-dashboard"
+  }
+}
+
+resource "juju_application" "sso-providers" {
+  for_each = var.sso-providers
+  name     = "keystone-idp-${each.key}"
+  model    = var.model
+
+  charm {
+    name     = "kratos-external-idp-integrator"
+    channel  = var.kratos-idp-channel
+    revision = var.kratos-idp-revision
+    base     = "ubuntu@22.04"
+  }
+  units  = 1
+  config = each.value
+}
+
+resource "juju_integration" "sso-to-keystone" {
+  for_each = var.sso-providers
+  model    = juju_model.sunbeam.name
+
+  application {
+    name     = "keystone-idp-${each.key}"
+    endpoint = "kratos-external-idp"
+  }
+
+  application {
+    name     = module.keystone.name
+    endpoint = "external-idp"
+  }
+}
