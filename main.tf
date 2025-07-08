@@ -1485,6 +1485,21 @@ resource "juju_integration" "images-sync-to-traefik-public" {
   }
 }
 
+resource "juju_integration" "images-sync-to-keystone-cacert" {
+  count = var.enable-images-sync ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = module.keystone.name
+    endpoint = "send-ca-cert"
+  }
+
+  application {
+    name     = juju_application.images-sync[count.index].name
+    endpoint = "receive-ca-cert"
+  }
+}
+
 resource "juju_integration" "images-sync-to-logging" {
   count = (local.grafana-agent-name != null && length(juju_application.images-sync) > 0) ? 1 : 0
   model = juju_model.sunbeam.name
