@@ -920,3 +920,27 @@ variable "region" {
   type        = string
   default     = "RegionOne"
 }
+
+variable "keystone-to-trusted-dashboard" {
+  description = "Enable trusted dashboard"
+  type        = bool
+  default     = false
+}
+
+variable "kratos-idp-channel" {
+  description = "Operator channel for Kratos external integrator"
+  type        = string
+  default     = "0.2/stable"
+}
+
+variable "kratos-idp-revision" {
+  description = "Operator channel revision for Kratos external integrator"
+  type        = number
+  default     = null
+}
+
+variable "sso-providers" {
+  description = "Keystone IDPs and their configs"
+  type        = map(map(string))
+  default     = {}
+}
