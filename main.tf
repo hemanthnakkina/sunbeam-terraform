@@ -349,7 +349,11 @@ resource "juju_application" "traefik-public" {
     revision = var.traefik-revision
   }
 
-  config             = var.traefik-config
+  config = (
+    var.traefik-public-config != {}
+    ? var.traefik-public-config
+    : var.traefik-config
+  )
   storage_directives = var.traefik-storage
   units              = var.ingress-scale
 }
@@ -411,7 +415,11 @@ resource "juju_application" "traefik-rgw" {
     revision = var.traefik-revision
   }
 
-  config             = var.traefik-config
+  config = (
+    var.traefik-rgw-config != {}
+    ? var.traefik-rgw-config
+    : var.traefik-config
+  )
   storage_directives = var.traefik-storage
   units              = var.ingress-scale
 }
