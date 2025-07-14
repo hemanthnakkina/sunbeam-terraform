@@ -81,6 +81,17 @@ variable "traefik-config" {
   default     = {}
 }
 
+variable "traefik-public-config" {
+  description = "Operator configs for Traefik public deployment"
+  type        = map(string)
+  default     = {}
+}
+variable "traefik-rgw-config" {
+  description = "Operator configs for Traefik rgw deployment"
+  type        = map(string)
+  default     = {}
+}
+
 variable "traefik-storage" {
   description = "Operator storage directives for Traefik deployment"
   type        = map(string)
