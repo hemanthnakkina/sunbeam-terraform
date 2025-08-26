@@ -944,8 +944,35 @@ variable "kratos-idp-revision" {
   default     = null
 }
 
+variable "keystone-saml-channel" {
+  description = "Operator channel for keystone-saml-k8s external integrator"
+  type        = string
+  default     = null
+}
+
+variable "keystone-saml-revision" {
+  description = "Operator channel revision for keystone-saml-k8s external integrator"
+  type        = number
+  default     = null
+}
+
 variable "sso-providers" {
   description = "Keystone IDPs and their configs"
-  type        = map(map(string))
-  default     = {}
+  # type        = map(map(string))
+  type = object({
+    openid = optional(map(map(string)))
+    saml2  = optional(map(map(string)))
+  })
+
+  default = {
+    openid = {}
+    saml2  = {}
+  }
 }
+
+variable "saml-x509-keypair" {
+  description = "The juju secret that holds the SAML2 certificate and key"
+  type        = string
+  default     = ""
+}
+
