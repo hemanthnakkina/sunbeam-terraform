@@ -159,6 +159,7 @@ module "keystone" {
   resource-configs = merge(var.keystone-config, {
     enable-telemetry-notifications = var.enable-telemetry
     region                         = var.region
+    saml-x509-keypair              = var.saml-x509-keypair
   })
   resource-storages = var.keystone-storage
 }
@@ -1688,9 +1689,9 @@ resource "juju_integration" "keystone-to-trusted-dashboard-endpoint" {
   }
 }
 
-resource "juju_application" "sso-providers" {
-  for_each = var.sso-providers
-  name     = "keystone-idp-${each.key}"
+resource "juju_application" "sso-openid-providers" {
+  for_each = var.sso-providers.openid
+  name     = "keystone-idp-openid-${each.key}"
   model    = var.model
 
   charm {
@@ -1703,17 +1704,47 @@ resource "juju_application" "sso-providers" {
   config = each.value
 }
 
-resource "juju_integration" "sso-to-keystone" {
-  for_each = var.sso-providers
+resource "juju_integration" "sso-openid-to-keystone" {
+  for_each = var.sso-providers.openid
   model    = juju_model.sunbeam.name
 
   application {
-    name     = "keystone-idp-${each.key}"
+    name     = "keystone-idp-openid-${each.key}"
     endpoint = "kratos-external-idp"
   }
 
   application {
     name     = module.keystone.name
     endpoint = "external-idp"
+  }
+}
+
+resource "juju_application" "sso-saml2-providers" {
+  for_each = var.sso-providers.saml2
+  name     = "keystone-idp-saml2-${each.key}"
+  model    = var.model
+
+  charm {
+    name     = "keystone-saml-k8s"
+    channel  = var.keystone-saml-channel == null ? var.openstack-channel : var.keystone-saml-channel
+    revision = var.keystone-saml-revision
+    base     = "ubuntu@24.04"
+  }
+  units  = 1
+  config = each.value
+}
+
+resource "juju_integration" "sso-saml2-to-keystone" {
+  for_each = var.sso-providers.saml2
+  model    = juju_model.sunbeam.name
+
+  application {
+    name     = "keystone-idp-saml2-${each.key}"
+    endpoint = "keystone-saml"
+  }
+
+  application {
+    name     = module.keystone.name
+    endpoint = "keystone-saml"
   }
 }
