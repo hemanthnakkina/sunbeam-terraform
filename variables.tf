@@ -363,10 +363,22 @@ variable "enable-ceph" {
   default     = false
 }
 
+variable "enable-ceph-nfs" {
+  description = "Enable Ceph NFS integration"
+  type        = bool
+  default     = false
+}
+
 variable "ceph-offer-url" {
   description = "Offer URL from microceph app"
   type        = string
   default     = "admin/controller.microceph"
+}
+
+variable "ceph-nfs-offer-url" {
+  description = "NFS offer URL from microceph app"
+  type        = string
+  default     = "admin/controller.microceph-ceph-nfs"
 }
 
 variable "ceph-osd-replication-count" {
@@ -712,6 +724,54 @@ variable "magnum-revision" {
 
 variable "magnum-config" {
   description = "Operator config for Magnum deployment"
+  type        = map(string)
+  default     = {}
+}
+
+variable "enable-manila" {
+  description = "Enable OpenStack Manila service"
+  type        = bool
+  default     = false
+}
+
+variable "manila-channel" {
+  description = "Operator channel for Manila deployment"
+  type        = string
+  default     = null
+}
+
+variable "manila-revision" {
+  description = "Operator channel revision for Manila deployment"
+  type        = number
+  default     = null
+}
+
+variable "manila-config" {
+  description = "Operator config for Manila deployment"
+  type        = map(string)
+  default     = {}
+}
+
+variable "enable-manila-cephfs" {
+  description = "Enable OpenStack CEPHFS storage backend for the Manila service"
+  type        = bool
+  default     = false
+}
+
+variable "manila-cephfs-channel" {
+  description = "Operator channel for the CEPHFS manila-share service"
+  type        = string
+  default     = null
+}
+
+variable "manila-cephfs-revision" {
+  description = "Operator channel revision for the CEPHFS manila-share service"
+  type        = number
+  default     = null
+}
+
+variable "manila-cephfs-config" {
+  description = "Operator config for the CEPHFS manila-share service"
   type        = map(string)
   default     = {}
 }

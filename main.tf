@@ -37,6 +37,7 @@ locals {
     horizon   = var.many-mysql ? { "configs" : lookup(var.mysql-config-map, "horizon", {}), "storages" : lookup(var.mysql-storage-map, "horizon", {}) } : null,
     heat      = var.many-mysql && var.enable-heat ? { "configs" : lookup(var.mysql-config-map, "heat", {}), "storages" : lookup(var.mysql-storage-map, "heat", {}) } : null,
     magnum    = var.many-mysql && var.enable-magnum ? { "configs" : lookup(var.mysql-config-map, "magnum", {}), "storages" : lookup(var.mysql-storage-map, "magnum", {}) } : null,
+    manila    = var.many-mysql && var.enable-manila ? { "configs" : lookup(var.mysql-config-map, "manila", {}), "storages" : lookup(var.mysql-storage-map, "manila", {}) } : null,
     aodh      = var.many-mysql && var.enable-telemetry ? { "configs" : lookup(var.mysql-config-map, "aodh", {}), "storages" : lookup(var.mysql-storage-map, "aodh", {}) } : null,
     gnocchi   = var.many-mysql && var.enable-telemetry ? { "configs" : lookup(var.mysql-config-map, "gnocchi", {}), "storages" : lookup(var.mysql-storage-map, "gnocchi", {}) } : null,
     octavia   = var.many-mysql && var.enable-octavia ? { "configs" : lookup(var.mysql-config-map, "octavia", {}), "storages" : lookup(var.mysql-storage-map, "octavia", {}) } : null,
@@ -55,6 +56,11 @@ locals {
 data "juju_offer" "microceph" {
   count = var.enable-ceph ? 1 : 0
   url   = var.ceph-offer-url
+}
+
+data "juju_offer" "microceph-ceph-nfs" {
+  count = var.enable-ceph-nfs ? 1 : 0
+  url   = var.ceph-nfs-offer-url
 }
 
 data "juju_offer" "cinder-volume" {
@@ -1175,6 +1181,78 @@ module "magnum" {
     "cluster-user-trust" = "true"
     region               = var.region
   })
+}
+
+module "manila" {
+  depends_on           = [module.single-mysql, module.many-mysql]
+  count                = var.enable-manila ? 1 : 0
+  source               = "./modules/openstack-api"
+  charm                = "manila-k8s"
+  name                 = "manila"
+  model                = juju_model.sunbeam.name
+  channel              = var.manila-channel == null ? var.openstack-channel : var.manila-channel
+  revision             = var.manila-revision
+  rabbitmq             = module.rabbitmq.name
+  mysql                = local.mysql["manila"]
+  keystone             = module.keystone.name
+  keystone-cacerts     = module.keystone.name
+  ingress-internal     = juju_application.traefik.name
+  ingress-public       = juju_application.traefik-public.name
+  scale                = var.os-api-scale
+  mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
+  resource-configs = merge(var.manila-config, {
+    region = var.region
+  })
+}
+
+module "manila-cephfs" {
+  depends_on           = [module.single-mysql, module.many-mysql]
+  count                = var.enable-manila-cephfs ? 1 : 0
+  source               = "./modules/openstack-api"
+  charm                = "manila-cephfs-k8s"
+  name                 = "manila-cephfs"
+  model                = juju_model.sunbeam.name
+  channel              = var.manila-cephfs-channel == null ? var.openstack-channel : var.manila-cephfs-channel
+  revision             = var.manila-cephfs-revision
+  rabbitmq             = module.rabbitmq.name
+  mysql                = local.mysql["manila"]
+  keystone-credentials = module.keystone.name
+  ingress-internal     = ""
+  ingress-public       = ""
+  scale                = var.os-api-scale
+  mysql-router-channel = var.mysql-router-channel
+  logging-app          = local.grafana-agent-name
+}
+
+resource "juju_integration" "manila-cephfs-to-manila" {
+  count = (var.enable-manila && var.enable-manila-cephfs) ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = module.manila-cephfs[count.index].name
+    endpoint = "manila"
+  }
+
+  application {
+    name     = module.manila[count.index].name
+    endpoint = "manila"
+  }
+}
+
+# juju integrate manila-cephfs:ceph-nfs microceph:ceph-nfs
+resource "juju_integration" "manila-cephfs-to-ceph" {
+  count = var.enable-manila-cephfs ? length(data.juju_offer.microceph-ceph-nfs) : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = module.manila-cephfs[count.index].name
+    endpoint = "ceph-nfs"
+  }
+
+  application {
+    offer_url = data.juju_offer.microceph-ceph-nfs[count.index].url
+  }
 }
 
 resource "juju_application" "ldap-apps" {
