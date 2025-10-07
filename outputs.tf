@@ -84,3 +84,8 @@ output "cinder-volume-database-offer-url" {
   description = "URL of the cinder volume database offer"
   value       = one(juju_offer.cinder-volume-database-offer[*].url)
 }
+
+output "manila-data-database-offer-url" {
+  description = "URL of the manila data database offer"
+  value       = one(juju_offer.manila-data-database-offer[*].url)
+}
