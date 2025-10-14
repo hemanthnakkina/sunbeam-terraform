@@ -393,6 +393,22 @@ variable "enable-cinder-volume" {
   default     = false
 }
 
+variable "is-region-controller" {
+  # Only a small subset of API services will be deployed on region
+  # controllers (e.g. Keystone, Horizon).
+  description = "Specify if this is a region controller."
+  type        = bool
+  default     = false
+}
+
+variable "is-secondary-region" {
+  # Secondary regions will not host services that are expected to run
+  # on the region controller (e.g. Keystone, Horizon).
+  description = "Specify if this is a secondary region."
+  type        = bool
+  default     = false
+}
+
 variable "cinder-volume-offer-url" {
   description = "Offer URL from cinder-volume app"
   type        = string
@@ -1013,6 +1029,32 @@ variable "keystone-saml-channel" {
 variable "keystone-saml-revision" {
   description = "Operator channel revision for keystone-saml-k8s external integrator"
   type        = number
+  default     = null
+}
+
+variable "external-keystone-offer-url" {
+  # In multi-region setups, the cluster connects to an external Keystone
+  # service, in which case an offer URL must be provided.
+  description = "URL of the external keystone credentials offer"
+  type        = string
+  default     = null
+}
+
+variable "external-keystone-endpoints-offer-url" {
+  description = "URL of the external keystone endpoints offer"
+  type        = string
+  default     = null
+}
+
+variable "external-keystone-ops-offer-url" {
+  description = "URL of the external keystone ops offer"
+  type        = string
+  default     = null
+}
+
+variable "external-cert-distributor-offer-url" {
+  description = "URL of the external cert distributor offer"
+  type        = string
   default     = null
 }
 
