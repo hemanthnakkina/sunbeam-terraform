@@ -31,7 +31,7 @@ output "keystone-endpoints-offer-url" {
 }
 
 output "keystone-ops-offer-url" {
-  description = "URL of the keystone endpoints offer"
+  description = "URL of the keystone ops offer"
   value       = can(coalesce(var.external-keystone-ops-offer-url)) ? var.external-keystone-ops-offer-url : one(module.keystone[*].keystone-ops-offer-url)
 }
 
