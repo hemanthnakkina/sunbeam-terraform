@@ -22,17 +22,17 @@ output "ca-offer-url" {
 
 output "keystone-offer-url" {
   description = "URL of the keystone offer"
-  value       = can(coalesce(var.external-keystone-offer-url)) ? var.external-keystone-offer-url : one(module.keystone[*].keystone-offer-url)
+  value       = can(coalesce(var.external-keystone-offer-url)) ? var.external-keystone-offer-url : one(module.keystone.keystone-offer-url[*])
 }
 
 output "keystone-endpoints-offer-url" {
   description = "URL of the keystone endpoints offer"
-  value       = can(coalesce(var.external-keystone-endpoints-offer-url)) ? var.external-keystone-endpoints-offer-url : one(module.keystone[*].keystone-endpoints-offer-url)
+  value       = can(coalesce(var.external-keystone-endpoints-offer-url)) ? var.external-keystone-endpoints-offer-url : one(module.keystone.keystone-endpoints-offer-url[*])
 }
 
 output "keystone-ops-offer-url" {
   description = "URL of the keystone ops offer"
-  value       = can(coalesce(var.external-keystone-ops-offer-url)) ? var.external-keystone-ops-offer-url : one(module.keystone[*].keystone-ops-offer-url)
+  value       = can(coalesce(var.external-keystone-ops-offer-url)) ? var.external-keystone-ops-offer-url : one(module.keystone.keystone-ops-offer-url[*])
 }
 
 output "rabbitmq-offer-url" {
@@ -42,7 +42,7 @@ output "rabbitmq-offer-url" {
 
 output "ovn-relay-offer-url" {
   description = "URL of the ovn relay offer"
-  value       = one(module.ovn[*].ovn-relay-offer-url)
+  value       = one(module.ovn.ovn-relay-offer-url[*])
 }
 
 output "ceilometer-offer-url" {
@@ -52,12 +52,12 @@ output "ceilometer-offer-url" {
 
 output "cert-distributor-offer-url" {
   description = "URL of the cert distributor offer"
-  value       = can(coalesce(var.external-cert-distributor-offer-url)) ? var.external-cert-distributor-offer-url : one(module.keystone[*].cert-distributor-offer-url)
+  value       = can(coalesce(var.external-cert-distributor-offer-url)) ? var.external-cert-distributor-offer-url : one(module.keystone.cert-distributor-offer-url[*])
 }
 
 output "nova-offer-url" {
   description = "URL of the nova service offer"
-  value       = one(module.nova[*].nova-offer-url)
+  value       = one(module.nova.nova-offer-url[*])
 }
 
 output "ingress-rgw-offer-url" {

@@ -20,25 +20,25 @@ output "name" {
 
 output "keystone-offer-url" {
   description = "URL of the keystone offer"
-  value       = one(juju_offer.keystone-offer[*].url)
+  value       = juju_offer.keystone-offer[*].url
 }
 
 output "keystone-endpoints-offer-url" {
   description = "URL of the keystone endpoints offer"
-  value       = one(juju_offer.keystone-endpoints-offer[*].url)
+  value       = juju_offer.keystone-endpoints-offer[*].url
 }
 
 output "keystone-ops-offer-url" {
   description = "URL of the keystone ops offer"
-  value       = one(juju_offer.keystone-ops-offer[*].url)
+  value       = juju_offer.keystone-ops-offer[*].url
 }
 
 output "cert-distributor-offer-url" {
   description = "URL of the cert distributor offer"
-  value       = one(juju_offer.cert-distributor-offer[*].url)
+  value       = juju_offer.cert-distributor-offer[*].url
 }
 
 output "nova-offer-url" {
   description = "URL of the nova offer"
-  value       = one(juju_offer.nova-offer[*].url)
+  value       = juju_offer.nova-offer[*].url
 }
