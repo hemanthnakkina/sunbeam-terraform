@@ -133,9 +133,9 @@ module "glance" {
   revision                              = var.glance-revision
   rabbitmq                              = module.rabbitmq.name
   mysql                                 = local.mysql["glance"]
-  keystone                              = module.keystone.name
+  keystone                              = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
-  keystone-cacerts                      = module.keystone.name
+  keystone-cacerts                      = var.is-secondary-region ? "" : module.keystone.name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
   ingress-internal                      = juju_application.traefik.name
   ingress-public                        = juju_application.traefik-public.name
@@ -183,9 +183,9 @@ module "nova" {
   revision                              = var.nova-revision
   rabbitmq                              = module.rabbitmq.name
   mysql                                 = local.mysql["nova"]
-  keystone                              = module.keystone.name
+  keystone                              = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
-  keystone-cacerts                      = module.keystone.name
+  keystone-cacerts                      = var.is-secondary-region ? "" : module.keystone.name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
   ingress-internal                      = juju_application.traefik.name
   ingress-public                        = juju_application.traefik-public.name
@@ -236,9 +236,9 @@ module "horizon" {
   channel                             = var.horizon-channel == null ? var.openstack-channel : var.horizon-channel
   revision                            = var.horizon-revision
   mysql                               = local.mysql["horizon"]
-  keystone-credentials                = module.keystone.name
+  keystone-credentials                = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-offer-url         = var.external-keystone-offer-url
-  keystone-cacerts                    = module.keystone.name
+  keystone-cacerts                    = var.is-secondary-region ? "" : module.keystone.name
   external-cert-distributor-offer-url = var.external-cert-distributor-offer-url
   ingress-internal                    = juju_application.traefik.name
   ingress-public                      = juju_application.traefik-public.name
@@ -260,9 +260,9 @@ module "neutron" {
   revision                              = var.neutron-revision
   rabbitmq                              = module.rabbitmq.name
   mysql                                 = local.mysql["neutron"]
-  keystone                              = module.keystone.name
+  keystone                              = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
-  keystone-cacerts                      = module.keystone.name
+  keystone-cacerts                      = var.is-secondary-region ? "" : module.keystone.name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
   ingress-internal                      = juju_application.traefik.name
   ingress-public                        = juju_application.traefik-public.name
@@ -283,9 +283,9 @@ module "placement" {
   channel                               = var.placement-channel == null ? var.openstack-channel : var.placement-channel
   revision                              = var.placement-revision
   mysql                                 = local.mysql["placement"]
-  keystone                              = module.keystone.name
+  keystone                              = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
-  keystone-cacerts                      = module.keystone.name
+  keystone-cacerts                      = var.is-secondary-region ? "" : module.keystone.name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
   ingress-internal                      = juju_application.traefik.name
   ingress-public                        = juju_application.traefik-public.name
@@ -602,9 +602,9 @@ module "cinder" {
   revision                              = var.cinder-revision
   rabbitmq                              = module.rabbitmq.name
   mysql                                 = local.mysql["cinder"]
-  keystone                              = module.keystone.name
+  keystone                              = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
-  keystone-cacerts                      = module.keystone.name
+  keystone-cacerts                      = var.is-secondary-region ? "" : module.keystone.name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
   ingress-internal                      = juju_application.traefik.name
   ingress-public                        = juju_application.traefik-public.name
@@ -688,11 +688,11 @@ module "heat" {
   revision                              = var.heat-revision
   rabbitmq                              = module.rabbitmq.name
   mysql                                 = local.mysql["heat"]
-  keystone                              = module.keystone.name
+  keystone                              = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
-  keystone-ops                          = module.keystone.name
+  keystone-ops                          = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-ops-offer-url       = var.external-keystone-ops-offer-url
-  keystone-cacerts                      = module.keystone.name
+  keystone-cacerts                      = var.is-secondary-region ? "" : module.keystone.name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
   ingress-internal                      = ""
   ingress-public                        = ""
@@ -745,9 +745,9 @@ module "aodh" {
   revision                              = var.aodh-revision
   rabbitmq                              = module.rabbitmq.name
   mysql                                 = local.mysql["aodh"]
-  keystone                              = module.keystone.name
+  keystone                              = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
-  keystone-cacerts                      = module.keystone.name
+  keystone-cacerts                      = var.is-secondary-region ? "" : module.keystone.name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
   ingress-internal                      = juju_application.traefik.name
   ingress-public                        = juju_application.traefik-public.name
@@ -769,9 +769,9 @@ module "gnocchi" {
   channel                               = var.gnocchi-channel == null ? var.openstack-channel : var.gnocchi-channel
   revision                              = var.gnocchi-revision
   mysql                                 = local.mysql["gnocchi"]
-  keystone                              = module.keystone.name
+  keystone                              = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
-  keystone-cacerts                      = module.keystone.name
+  keystone-cacerts                      = var.is-secondary-region ? "" : module.keystone.name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
   ingress-internal                      = juju_application.traefik.name
   ingress-public                        = juju_application.traefik-public.name
@@ -1057,11 +1057,11 @@ module "octavia" {
   channel                               = var.octavia-channel == null ? var.openstack-channel : var.octavia-channel
   revision                              = var.octavia-revision
   mysql                                 = local.mysql["octavia"]
-  keystone                              = module.keystone.name
+  keystone                              = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
-  keystone-ops                          = module.keystone.name
+  keystone-ops                          = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-ops-offer-url       = var.external-keystone-ops-offer-url
-  keystone-cacerts                      = module.keystone.name
+  keystone-cacerts                      = var.is-secondary-region ? "" : module.keystone.name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
   ingress-internal                      = juju_application.traefik.name
   ingress-public                        = juju_application.traefik-public.name
@@ -1149,9 +1149,9 @@ module "designate" {
   revision                              = var.designate-revision
   rabbitmq                              = module.rabbitmq.name
   mysql                                 = local.mysql["designate"]
-  keystone                              = module.keystone.name
+  keystone                              = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
-  keystone-cacerts                      = module.keystone.name
+  keystone-cacerts                      = var.is-secondary-region ? "" : module.keystone.name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
   ingress-internal                      = juju_application.traefik.name
   ingress-public                        = juju_application.traefik-public.name
@@ -1221,11 +1221,11 @@ module "barbican" {
   revision                              = var.barbican-revision
   rabbitmq                              = module.rabbitmq.name
   mysql                                 = local.mysql["barbican"]
-  keystone                              = module.keystone.name
+  keystone                              = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
-  keystone-ops                          = module.keystone.name
+  keystone-ops                          = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-ops-offer-url       = var.external-keystone-ops-offer-url
-  keystone-cacerts                      = module.keystone.name
+  keystone-cacerts                      = var.is-secondary-region ? "" : module.keystone.name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
   ingress-internal                      = juju_application.traefik.name
   ingress-public                        = juju_application.traefik-public.name
@@ -1263,11 +1263,11 @@ module "magnum" {
   revision                              = var.magnum-revision
   rabbitmq                              = module.rabbitmq.name
   mysql                                 = local.mysql["magnum"]
-  keystone                              = module.keystone.name
+  keystone                              = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
-  keystone-ops                          = module.keystone.name
+  keystone-ops                          = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-ops-offer-url       = var.external-keystone-ops-offer-url
-  keystone-cacerts                      = module.keystone.name
+  keystone-cacerts                      = var.is-secondary-region ? "" : module.keystone.name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
   ingress-internal                      = juju_application.traefik.name
   ingress-public                        = juju_application.traefik-public.name
@@ -1291,9 +1291,9 @@ module "manila" {
   revision                              = var.manila-revision
   rabbitmq                              = module.rabbitmq.name
   mysql                                 = local.mysql["manila"]
-  keystone                              = module.keystone.name
+  keystone                              = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
-  keystone-cacerts                      = module.keystone.name
+  keystone-cacerts                      = var.is-secondary-region ? "" : module.keystone.name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
   ingress-internal                      = juju_application.traefik.name
   ingress-public                        = juju_application.traefik-public.name
@@ -1316,7 +1316,7 @@ module "manila-cephfs" {
   revision                    = var.manila-cephfs-revision
   rabbitmq                    = module.rabbitmq.name
   mysql                       = local.mysql["manila"]
-  keystone-credentials        = module.keystone.name
+  keystone-credentials        = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-offer-url = var.external-keystone-offer-url
   ingress-internal            = ""
   ingress-public              = ""
@@ -1816,9 +1816,9 @@ module "watcher" {
   revision                              = var.watcher-revision
   rabbitmq                              = module.rabbitmq.name
   mysql                                 = local.mysql["watcher"]
-  keystone                              = module.keystone.name
+  keystone                              = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
-  keystone-cacerts                      = module.keystone.name
+  keystone-cacerts                      = var.is-secondary-region ? "" : module.keystone.name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
   ingress-internal                      = juju_application.traefik.name
   ingress-public                        = juju_application.traefik-public.name
@@ -1893,9 +1893,9 @@ module "masakari" {
   revision                              = var.masakari-revision
   rabbitmq                              = module.rabbitmq.name
   mysql                                 = local.mysql["masakari"]
-  keystone                              = module.keystone.name
+  keystone                              = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
-  keystone-cacerts                      = module.keystone.name
+  keystone-cacerts                      = var.is-secondary-region ? "" : module.keystone.name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
   ingress-internal                      = juju_application.traefik.name
   ingress-public                        = juju_application.traefik-public.name
@@ -1970,9 +1970,9 @@ module "cloudkitty" {
   revision                              = var.cloudkitty-revision
   rabbitmq                              = module.rabbitmq.name
   mysql                                 = local.mysql["cloudkitty"]
-  keystone                              = module.keystone.name
+  keystone                              = var.is-secondary-region ? "" : module.keystone.name
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
-  keystone-cacerts                      = module.keystone.name
+  keystone-cacerts                      = var.is-secondary-region ? "" : module.keystone.name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
   ingress-internal                      = juju_application.traefik.name
   ingress-public                        = juju_application.traefik-public.name
