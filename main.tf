@@ -56,6 +56,18 @@ locals {
   # In multi-region environments, Keystone will only run on the region controller
   # and the secondary region will consume the external Juju offers.
   keystone-service-name = var.is-secondary-region ? "" : "keystone"
+
+  # The name of the Traefik application, used for Juju integration.
+  # This applies to "standard" API services that are not expected to run on
+  # region controllers.
+  standard-internal-traefik-name = var.is-region-controller ? "" : "traefik"
+  standard-public-traefik-name   = var.is-region-controller ? "" : "traefik-public"
+
+  # The name of the Traefik application, used for Juju integration.
+  # This applies to API services that are expected to run on region controllers,
+  # such as Keystone and Horizon.
+  controller-internal-traefik-name = var.is-secondary-region ? "" : "traefik"
+  controller-public-traefik-name   = var.is-secondary-region ? "" : "traefik-public"
 }
 
 data "juju_offer" "microceph" {
@@ -141,8 +153,8 @@ module "glance" {
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
   keystone-cacerts                      = local.keystone-service-name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
-  ingress-internal                      = var.is-region-controller ? "" : juju_application.traefik.name
-  ingress-public                        = var.is-region-controller ? "" : juju_application.traefik-public.name
+  ingress-internal                      = local.standard-internal-traefik-name
+  ingress-public                        = local.standard-public-traefik-name
   scale                                 = var.is-region-controller ? 0 : (var.enable-ceph ? var.os-api-scale : 1)
   mysql-router-channel                  = var.mysql-router-channel
   logging-app                           = local.grafana-agent-name
@@ -164,8 +176,8 @@ module "keystone" {
   revision             = var.keystone-revision
   rabbitmq             = module.rabbitmq.name
   mysql                = local.mysql["keystone"]
-  ingress-internal     = var.is-secondary-region ? "" : juju_application.traefik.name
-  ingress-public       = var.is-secondary-region ? "" : juju_application.traefik-public.name
+  ingress-internal     = local.controller-internal-traefik-name
+  ingress-public       = local.controller-public-traefik-name
   scale                = var.is-secondary-region ? 0 : var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
   logging-app          = local.grafana-agent-name
@@ -191,8 +203,8 @@ module "nova" {
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
   keystone-cacerts                      = local.keystone-service-name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
-  ingress-internal                      = var.is-region-controller ? "" : juju_application.traefik.name
-  ingress-public                        = var.is-region-controller ? "" : juju_application.traefik-public.name
+  ingress-internal                      = local.standard-internal-traefik-name
+  ingress-public                        = local.standard-public-traefik-name
   scale                                 = var.is-region-controller ? 0 : var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
   logging-app                           = local.grafana-agent-name
@@ -244,8 +256,8 @@ module "horizon" {
   external-keystone-offer-url         = var.external-keystone-offer-url
   keystone-cacerts                    = local.keystone-service-name
   external-cert-distributor-offer-url = var.external-cert-distributor-offer-url
-  ingress-internal                    = var.is-secondary-region ? "" : juju_application.traefik.name
-  ingress-public                      = var.is-secondary-region ? "" : juju_application.traefik-public.name
+  ingress-internal                    = local.controller-internal-traefik-name
+  ingress-public                      = local.controller-public-traefik-name
   scale                               = var.is-secondary-region ? 0 : var.os-api-scale
   mysql-router-channel                = var.mysql-router-channel
   logging-app                         = local.grafana-agent-name
@@ -268,8 +280,8 @@ module "neutron" {
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
   keystone-cacerts                      = local.keystone-service-name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
-  ingress-internal                      = var.is-region-controller ? "" : juju_application.traefik.name
-  ingress-public                        = var.is-region-controller ? "" : juju_application.traefik-public.name
+  ingress-internal                      = local.standard-internal-traefik-name
+  ingress-public                        = local.standard-public-traefik-name
   scale                                 = var.is-region-controller ? 0 : var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
   logging-app                           = local.grafana-agent-name
@@ -291,8 +303,8 @@ module "placement" {
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
   keystone-cacerts                      = local.keystone-service-name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
-  ingress-internal                      = var.is-region-controller ? "" : juju_application.traefik.name
-  ingress-public                        = var.is-region-controller ? "" : juju_application.traefik-public.name
+  ingress-internal                      = local.standard-internal-traefik-name
+  ingress-public                        = local.standard-public-traefik-name
   scale                                 = var.is-region-controller ? 0 : var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
   logging-app                           = local.grafana-agent-name
@@ -610,8 +622,8 @@ module "cinder" {
   external-keystone-endpoints-offer-url = var.external-keystone-endpoints-offer-url
   keystone-cacerts                      = local.keystone-service-name
   external-cert-distributor-offer-url   = var.external-cert-distributor-offer-url
-  ingress-internal                      = var.is-region-controller ? "" : juju_application.traefik.name
-  ingress-public                        = var.is-region-controller ? "" : juju_application.traefik-public.name
+  ingress-internal                      = local.standard-internal-traefik-name
+  ingress-public                        = local.standard-public-traefik-name
   scale                                 = var.is-region-controller ? 0 : var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
   logging-app                           = local.grafana-agent-name
