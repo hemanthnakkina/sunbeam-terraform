@@ -113,7 +113,7 @@ resource "juju_integration" "ovn-central-to-logging" {
 
   application {
     name     = var.logging-app
-    endpoint = "logging-provider"
+    endpoint = "receive-loki-logs"
   }
 }
 
@@ -128,7 +128,7 @@ resource "juju_integration" "ovn-relay-to-logging" {
 
   application {
     name     = var.logging-app
-    endpoint = "logging-provider"
+    endpoint = "receive-loki-logs"
   }
 }
 

@@ -52,7 +52,7 @@ locals {
   mysql = {
     for k, v in local.mysql-services : k => v != null ? "${k}-mysql" : local.single-mysql
   }
-  grafana-agent-name = length(juju_application.grafana-agent) > 0 ? juju_application.grafana-agent[0].name : null
+  observability-agent-name = length(juju_application.observability-agent) > 0 ? juju_application.observability-agent[0].name : null
   # The name of the Keystone application belonging to this cluster, used for Juju integrations.
   # In multi-region environments, Keystone will only run on the region controller
   # and the secondary region will consume the external Juju offers.
@@ -108,9 +108,9 @@ module "single-mysql" {
   scale                 = var.ha-scale
   resource-configs      = var.mysql-config
   resource-storages     = var.mysql-storage
-  grafana-dashboard-app = local.grafana-agent-name
-  metrics-endpoint-app  = local.grafana-agent-name
-  logging-app           = local.grafana-agent-name
+  grafana-dashboard-app = local.observability-agent-name
+  metrics-endpoint-app  = local.observability-agent-name
+  logging-app           = local.observability-agent-name
 }
 
 module "many-mysql" {
@@ -123,9 +123,9 @@ module "many-mysql" {
   scale                 = var.ha-scale
   resource-configs      = merge(var.mysql-config, each.value.configs)
   resource-storages     = merge(var.mysql-storage, each.value.storages)
-  grafana-dashboard-app = local.grafana-agent-name
-  metrics-endpoint-app  = local.grafana-agent-name
-  logging-app           = local.grafana-agent-name
+  grafana-dashboard-app = local.observability-agent-name
+  metrics-endpoint-app  = local.observability-agent-name
+  logging-app           = local.observability-agent-name
 }
 
 module "rabbitmq" {
@@ -136,7 +136,7 @@ module "rabbitmq" {
   revision          = var.rabbitmq-revision
   resource-configs  = var.rabbitmq-config
   resource-storages = var.rabbitmq-storage
-  logging-app       = local.grafana-agent-name
+  logging-app       = local.observability-agent-name
 }
 
 module "glance" {
@@ -158,7 +158,7 @@ module "glance" {
   ingress-public                        = local.standard-public-traefik-name
   scale                                 = var.is-region-controller ? 0 : (var.enable-ceph ? var.os-api-scale : 1)
   mysql-router-channel                  = var.mysql-router-channel
-  logging-app                           = local.grafana-agent-name
+  logging-app                           = local.observability-agent-name
   resource-configs = merge(var.glance-config, {
     ceph-osd-replication-count     = var.ceph-osd-replication-count
     enable-telemetry-notifications = var.enable-telemetry
@@ -181,7 +181,7 @@ module "keystone" {
   ingress-public       = local.controller-public-traefik-name
   scale                = var.is-secondary-region ? 0 : var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
-  logging-app          = local.grafana-agent-name
+  logging-app          = local.observability-agent-name
   resource-configs = merge(var.keystone-config, {
     enable-telemetry-notifications = var.enable-telemetry
     region                         = var.region
@@ -208,7 +208,7 @@ module "nova" {
   ingress-public                        = local.standard-public-traefik-name
   scale                                 = var.is-region-controller ? 0 : var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
-  logging-app                           = local.grafana-agent-name
+  logging-app                           = local.observability-agent-name
   resource-configs = merge(var.nova-config, {
     region = var.region
   })
@@ -262,7 +262,7 @@ module "horizon" {
   ingress-public                      = local.controller-public-traefik-name
   scale                               = var.is-secondary-region ? 0 : var.os-api-scale
   mysql-router-channel                = var.mysql-router-channel
-  logging-app                         = local.grafana-agent-name
+  logging-app                         = local.observability-agent-name
   resource-configs = merge(var.horizon-config, {
     plugins = jsonencode(var.horizon-plugins)
   })
@@ -286,7 +286,7 @@ module "neutron" {
   ingress-public                        = local.standard-public-traefik-name
   scale                                 = var.is-region-controller ? 0 : var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
-  logging-app                           = local.grafana-agent-name
+  logging-app                           = local.observability-agent-name
   resource-configs = merge(var.neutron-config, {
     region = var.region
   })
@@ -309,7 +309,7 @@ module "placement" {
   ingress-public                        = local.standard-public-traefik-name
   scale                                 = var.is-region-controller ? 0 : var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
-  logging-app                           = local.grafana-agent-name
+  logging-app                           = local.observability-agent-name
   resource-configs = merge(var.placement-config, {
     region = var.region
   })
@@ -341,7 +341,7 @@ resource "juju_integration" "traefik-internal-to-metrics-endpoint" {
   }
 
   application {
-    name     = juju_application.grafana-agent[count.index].name
+    name     = juju_application.observability-agent[count.index].name
     endpoint = "metrics-endpoint"
   }
 }
@@ -356,12 +356,12 @@ resource "juju_integration" "traefik-internal-to-grafana-dashboard" {
   }
 
   application {
-    name     = juju_application.grafana-agent[count.index].name
+    name     = juju_application.observability-agent[count.index].name
     endpoint = "grafana-dashboards-consumer"
   }
 }
 
-resource "juju_integration" "traefik-internal-to-grafana-agent-loki" {
+resource "juju_integration" "traefik-internal-to-observability-agent-loki" {
   count = var.enable-observability ? 1 : 0
   model = juju_model.sunbeam.name
 
@@ -371,8 +371,8 @@ resource "juju_integration" "traefik-internal-to-grafana-agent-loki" {
   }
 
   application {
-    name     = juju_application.grafana-agent[count.index].name
-    endpoint = "logging-provider"
+    name     = juju_application.observability-agent[count.index].name
+    endpoint = "receive-loki-logs"
   }
 }
 
@@ -406,7 +406,7 @@ resource "juju_integration" "traefik-public-to-metrics-endpoint" {
   }
 
   application {
-    name     = juju_application.grafana-agent[count.index].name
+    name     = juju_application.observability-agent[count.index].name
     endpoint = "metrics-endpoint"
   }
 }
@@ -421,12 +421,12 @@ resource "juju_integration" "traefik-public-to-grafana-dashboard" {
   }
 
   application {
-    name     = juju_application.grafana-agent[count.index].name
+    name     = juju_application.observability-agent[count.index].name
     endpoint = "grafana-dashboards-consumer"
   }
 }
 
-resource "juju_integration" "traefik-public-to-grafana-agent-loki" {
+resource "juju_integration" "traefik-public-to-observability-agent-loki" {
   count = var.enable-observability ? 1 : 0
   model = juju_model.sunbeam.name
 
@@ -436,8 +436,8 @@ resource "juju_integration" "traefik-public-to-grafana-agent-loki" {
   }
 
   application {
-    name     = juju_application.grafana-agent[count.index].name
-    endpoint = "logging-provider"
+    name     = juju_application.observability-agent[count.index].name
+    endpoint = "receive-loki-logs"
   }
 }
 
@@ -479,7 +479,7 @@ resource "juju_integration" "traefik-rgw-to-metrics-endpoint" {
   }
 
   application {
-    name     = juju_application.grafana-agent[count.index].name
+    name     = juju_application.observability-agent[count.index].name
     endpoint = "metrics-endpoint"
   }
 }
@@ -494,12 +494,12 @@ resource "juju_integration" "traefik-rgw-to-grafana-dashboard" {
   }
 
   application {
-    name     = juju_application.grafana-agent[count.index].name
+    name     = juju_application.observability-agent[count.index].name
     endpoint = "grafana-dashboards-consumer"
   }
 }
 
-resource "juju_integration" "traefik-rgw-to-grafana-agent-loki" {
+resource "juju_integration" "traefik-rgw-to-observability-agent-loki" {
   count = (var.enable-ceph && var.enable-observability) ? 1 : 0
   model = juju_model.sunbeam.name
 
@@ -509,8 +509,8 @@ resource "juju_integration" "traefik-rgw-to-grafana-agent-loki" {
   }
 
   application {
-    name     = juju_application.grafana-agent[count.index].name
-    endpoint = "logging-provider"
+    name     = juju_application.observability-agent[count.index].name
+    endpoint = "receive-loki-logs"
   }
 }
 
@@ -544,7 +544,7 @@ module "ovn" {
   resource-configs       = var.ovn-central-config
   relay-resource-configs = var.ovn-relay-config
   resource-storages      = var.ovn-central-storage
-  logging-app            = local.grafana-agent-name
+  logging-app            = local.observability-agent-name
 }
 
 # juju integrate ovn-central neutron
@@ -628,7 +628,7 @@ module "cinder" {
   ingress-public                        = local.standard-public-traefik-name
   scale                                 = var.is-region-controller ? 0 : var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
-  logging-app                           = local.grafana-agent-name
+  logging-app                           = local.observability-agent-name
   resource-configs = merge(var.cinder-config, {
     region = var.region
   })
@@ -723,7 +723,7 @@ module "heat" {
   ingress-public                        = ""
   scale                                 = var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
-  logging-app                           = local.grafana-agent-name
+  logging-app                           = local.observability-agent-name
   resource-configs = merge(var.heat-config, {
     region = var.region
   })
@@ -778,7 +778,7 @@ module "aodh" {
   ingress-public                        = juju_application.traefik-public.name
   scale                                 = var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
-  logging-app                           = local.grafana-agent-name
+  logging-app                           = local.observability-agent-name
   resource-configs = merge(var.aodh-config, {
     region = var.region
   })
@@ -802,7 +802,7 @@ module "gnocchi" {
   ingress-public                        = juju_application.traefik-public.name
   scale                                 = var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
-  logging-app                           = local.grafana-agent-name
+  logging-app                           = local.observability-agent-name
   resource-configs = merge(var.gnocchi-config, {
     ceph-osd-replication-count = var.ceph-osd-replication-count
     region                     = var.region
@@ -930,7 +930,7 @@ resource "juju_integration" "ceilometer-to-gnocchi" {
 }
 
 resource "juju_integration" "ceilometer-to-logging" {
-  count = (local.grafana-agent-name != null && length(juju_application.ceilometer) > 0) ? 1 : 0
+  count = (local.observability-agent-name != null && length(juju_application.ceilometer) > 0) ? 1 : 0
   model = juju_model.sunbeam.name
 
   application {
@@ -939,8 +939,8 @@ resource "juju_integration" "ceilometer-to-logging" {
   }
 
   application {
-    name     = local.grafana-agent-name
-    endpoint = "logging-provider"
+    name     = local.observability-agent-name
+    endpoint = "receive-loki-logs"
   }
 }
 
@@ -1037,7 +1037,7 @@ resource "juju_integration" "openstack-exporter-to-metrics-endpoint" {
   }
 
   application {
-    name     = juju_application.grafana-agent[count.index].name
+    name     = juju_application.observability-agent[count.index].name
     endpoint = "metrics-endpoint"
   }
 }
@@ -1052,13 +1052,13 @@ resource "juju_integration" "openstack-exporter-to-grafana-dashboard" {
   }
 
   application {
-    name     = juju_application.grafana-agent[count.index].name
+    name     = juju_application.observability-agent[count.index].name
     endpoint = "grafana-dashboards-consumer"
   }
 }
 
 resource "juju_integration" "openstack-exporter-to-logging" {
-  count = (local.grafana-agent-name != null && length(juju_application.openstack-exporter) > 0) ? 1 : 0
+  count = (local.observability-agent-name != null && length(juju_application.openstack-exporter) > 0) ? 1 : 0
   model = juju_model.sunbeam.name
 
   application {
@@ -1067,8 +1067,8 @@ resource "juju_integration" "openstack-exporter-to-logging" {
   }
 
   application {
-    name     = local.grafana-agent-name
-    endpoint = "logging-provider"
+    name     = local.observability-agent-name
+    endpoint = "receive-loki-logs"
   }
 }
 
@@ -1092,7 +1092,7 @@ module "octavia" {
   ingress-public                        = juju_application.traefik-public.name
   scale                                 = var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
-  logging-app                           = local.grafana-agent-name
+  logging-app                           = local.observability-agent-name
   resource-configs = merge(var.octavia-config, {
     region = var.region
   })
@@ -1149,7 +1149,7 @@ resource "juju_application" "bind" {
 }
 
 resource "juju_integration" "bind-to-logging" {
-  count = (local.grafana-agent-name != null && length(juju_application.bind) > 0) ? 1 : 0
+  count = (local.observability-agent-name != null && length(juju_application.bind) > 0) ? 1 : 0
   model = juju_model.sunbeam.name
 
   application {
@@ -1158,8 +1158,8 @@ resource "juju_integration" "bind-to-logging" {
   }
 
   application {
-    name     = local.grafana-agent-name
-    endpoint = "logging-provider"
+    name     = local.observability-agent-name
+    endpoint = "receive-loki-logs"
   }
 }
 
@@ -1182,7 +1182,7 @@ module "designate" {
   ingress-public                        = juju_application.traefik-public.name
   scale                                 = var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
-  logging-app                           = local.grafana-agent-name
+  logging-app                           = local.observability-agent-name
   resource-configs = merge(var.designate-config, {
     "nameservers" = var.nameservers
     region        = var.region
@@ -1256,7 +1256,7 @@ module "barbican" {
   ingress-public                        = juju_application.traefik-public.name
   scale                                 = var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
-  logging-app                           = local.grafana-agent-name
+  logging-app                           = local.observability-agent-name
   resource-configs = merge(var.barbican-config, {
     region = var.region
   })
@@ -1295,7 +1295,7 @@ module "ironic" {
   ingress-public       = local.standard-public-traefik-name
   scale                = var.is-region-controller ? 0 : var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
-  logging-app          = local.grafana-agent-name
+  logging-app          = local.observability-agent-name
   resource-configs = merge(var.ironic-config, {
     region = var.region
   })
@@ -1317,7 +1317,7 @@ module "nova-ironic" {
   ingress-public       = ""
   scale                = var.is-region-controller ? 0 : 1
   mysql-router-channel = var.mysql-router-channel
-  logging-app          = local.grafana-agent-name
+  logging-app          = local.observability-agent-name
   resource-configs = merge(var.nova-ironic-config, {
   })
 }
@@ -1339,7 +1339,7 @@ module "ironic-conductor" {
   ingress-public       = ""
   scale                = var.is-region-controller ? 0 : var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
-  logging-app          = local.grafana-agent-name
+  logging-app          = local.observability-agent-name
   resource-configs = merge(var.ironic-conductor-config, {
   })
 }
@@ -1450,7 +1450,7 @@ module "nova-ironic-shards" {
   ingress-public       = ""
   scale                = var.is-region-controller ? 0 : 1
   mysql-router-channel = var.mysql-router-channel
-  logging-app          = local.grafana-agent-name
+  logging-app          = local.observability-agent-name
   resource-configs = merge(var.nova-ironic-config, {
   })
 }
@@ -1502,7 +1502,7 @@ module "ironic-conductor-groups" {
   ingress-public       = ""
   scale                = var.is-region-controller ? 0 : var.os-api-scale
   mysql-router-channel = var.mysql-router-channel
-  logging-app          = local.grafana-agent-name
+  logging-app          = local.observability-agent-name
   resource-configs     = merge(var.ironic-conductor-config, each.value)
 }
 
@@ -1610,7 +1610,7 @@ module "magnum" {
   ingress-public                        = juju_application.traefik-public.name
   scale                                 = var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
-  logging-app                           = local.grafana-agent-name
+  logging-app                           = local.observability-agent-name
   resource-configs = merge(var.magnum-config, {
     "cluster-user-trust" = "true"
     region               = var.region
@@ -1636,7 +1636,7 @@ module "manila" {
   ingress-public                        = juju_application.traefik-public.name
   scale                                 = var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
-  logging-app                           = local.grafana-agent-name
+  logging-app                           = local.observability-agent-name
   resource-configs = merge(var.manila-config, {
     region = var.region
   })
@@ -1659,7 +1659,7 @@ module "manila-cephfs" {
   ingress-public              = ""
   scale                       = var.os-api-scale
   mysql-router-channel        = var.mysql-router-channel
-  logging-app                 = local.grafana-agent-name
+  logging-app                 = local.observability-agent-name
 }
 
 resource "juju_integration" "manila-cephfs-to-manila" {
@@ -1750,7 +1750,7 @@ resource "juju_application" "ldap-apps" {
 }
 
 resource "juju_integration" "ldap-apps-to-logging" {
-  for_each = local.grafana-agent-name != null ? var.ldap-apps : {}
+  for_each = local.observability-agent-name != null ? var.ldap-apps : {}
   model    = juju_model.sunbeam.name
 
   application {
@@ -1759,8 +1759,8 @@ resource "juju_integration" "ldap-apps-to-logging" {
   }
 
   application {
-    name     = local.grafana-agent-name
-    endpoint = "logging-provider"
+    name     = local.observability-agent-name
+    endpoint = "receive-loki-logs"
   }
 }
 
@@ -1931,7 +1931,7 @@ resource "juju_integration" "tempest-to-keystone-cacert-external" {
   }
 }
 
-resource "juju_integration" "tempest-to-grafana-agent-loki" {
+resource "juju_integration" "tempest-to-observability-agent-loki" {
   count = (var.enable-validation && var.enable-observability) ? 1 : 0
   model = juju_model.sunbeam.name
 
@@ -1941,12 +1941,12 @@ resource "juju_integration" "tempest-to-grafana-agent-loki" {
   }
 
   application {
-    name     = juju_application.grafana-agent[count.index].name
-    endpoint = "logging-provider"
+    name     = juju_application.observability-agent[count.index].name
+    endpoint = "receive-loki-logs"
   }
 }
 
-resource "juju_integration" "tempest-to-grafana-agent-grafana" {
+resource "juju_integration" "tempest-to-observability-agent-grafana" {
   count = (var.enable-validation && var.enable-observability) ? 1 : 0
   model = juju_model.sunbeam.name
 
@@ -1956,34 +1956,35 @@ resource "juju_integration" "tempest-to-grafana-agent-grafana" {
   }
 
   application {
-    name     = juju_application.grafana-agent[count.index].name
+    name     = juju_application.observability-agent[count.index].name
     endpoint = "grafana-dashboards-consumer"
   }
 }
 
-resource "juju_application" "grafana-agent" {
+resource "juju_application" "observability-agent" {
   count = var.enable-observability ? 1 : 0
-  name  = "grafana-agent"
+  name  = "opentelemetry-collector"
   model = juju_model.sunbeam.name
+  trust = true
 
 
   charm {
-    name     = "grafana-agent-k8s"
-    base     = "ubuntu@22.04"
-    channel  = var.grafana-agent-channel
-    revision = var.grafana-agent-revision
+    name     = "opentelemetry-collector-k8s"
+    base     = "ubuntu@24.04"
+    channel  = var.opentelemetry-collector-channel
+    revision = var.opentelemetry-collector-revision
   }
 
   units  = 1
-  config = var.grafana-agent-config
+  config = var.opentelemetry-collector-config
 }
 
-resource "juju_integration" "grafana-agent-to-receive-remote-write" {
+resource "juju_integration" "observability-agent-to-receive-remote-write" {
   count = (var.enable-observability && var.receive-remote-write-offer-url != null) ? 1 : 0
   model = juju_model.sunbeam.name
 
   application {
-    name     = juju_application.grafana-agent[count.index].name
+    name     = juju_application.observability-agent[count.index].name
     endpoint = "send-remote-write"
   }
 
@@ -1993,13 +1994,13 @@ resource "juju_integration" "grafana-agent-to-receive-remote-write" {
   }
 }
 
-resource "juju_integration" "grafana-agent-to-logging" {
+resource "juju_integration" "observability-agent-to-logging" {
   count = (var.enable-observability && var.logging-offer-url != null) ? 1 : 0
   model = juju_model.sunbeam.name
 
   application {
-    name     = juju_application.grafana-agent[count.index].name
-    endpoint = "logging-consumer"
+    name     = juju_application.observability-agent[count.index].name
+    endpoint = "send-loki-logs"
   }
 
   application {
@@ -2007,12 +2008,12 @@ resource "juju_integration" "grafana-agent-to-logging" {
   }
 }
 
-resource "juju_integration" "grafana-agent-to-cos-grafana" {
+resource "juju_integration" "observability-agent-to-cos-grafana" {
   count = (var.enable-observability && var.grafana-dashboard-offer-url != null) ? 1 : 0
   model = juju_model.sunbeam.name
 
   application {
-    name     = juju_application.grafana-agent[count.index].name
+    name     = juju_application.observability-agent[count.index].name
     endpoint = "grafana-dashboards-provider"
   }
 
@@ -2128,7 +2129,7 @@ resource "juju_integration" "images-sync-to-keystone-cacert-external" {
 }
 
 resource "juju_integration" "images-sync-to-logging" {
-  count = (local.grafana-agent-name != null && length(juju_application.images-sync) > 0) ? 1 : 0
+  count = (local.observability-agent-name != null && length(juju_application.images-sync) > 0) ? 1 : 0
   model = juju_model.sunbeam.name
 
   application {
@@ -2137,8 +2138,8 @@ resource "juju_integration" "images-sync-to-logging" {
   }
 
   application {
-    name     = local.grafana-agent-name
-    endpoint = "logging-provider"
+    name     = local.observability-agent-name
+    endpoint = "receive-loki-logs"
   }
 }
 
@@ -2161,7 +2162,7 @@ module "watcher" {
   ingress-public                        = juju_application.traefik-public.name
   scale                                 = var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
-  logging-app                           = local.grafana-agent-name
+  logging-app                           = local.observability-agent-name
   resource-configs = merge(var.watcher-config, {
     enable-telemetry-notifications = var.enable-telemetry
     region                         = var.region
@@ -2238,7 +2239,7 @@ module "masakari" {
   ingress-public                        = juju_application.traefik-public.name
   scale                                 = var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
-  logging-app                           = local.grafana-agent-name
+  logging-app                           = local.observability-agent-name
   resource-configs = merge(var.masakari-config, {
     region = var.region
   })
@@ -2315,7 +2316,7 @@ module "cloudkitty" {
   ingress-public                        = juju_application.traefik-public.name
   scale                                 = var.os-api-scale
   mysql-router-channel                  = var.mysql-router-channel
-  logging-app                           = local.grafana-agent-name
+  logging-app                           = local.observability-agent-name
   resource-configs = merge(var.cloudkitty-config, {
     region = var.region
   })

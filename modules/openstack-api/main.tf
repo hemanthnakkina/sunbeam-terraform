@@ -371,7 +371,7 @@ resource "juju_integration" "service-to-logging" {
 
   application {
     name     = var.logging-app
-    endpoint = "logging-provider"
+    endpoint = "receive-loki-logs"
   }
 }
 

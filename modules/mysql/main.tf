@@ -85,6 +85,6 @@ resource "juju_integration" "mysql-to-logging" {
 
   application {
     name     = var.logging-app
-    endpoint = "logging-provider"
+    endpoint = "receive-loki-logs"
   }
 }

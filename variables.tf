@@ -1016,22 +1016,22 @@ variable "enable-observability" {
   default     = false
 }
 
-variable "grafana-agent-channel" {
+variable "opentelemetry-collector-channel" {
   type        = string
-  default     = "latest/stable"
-  description = "Operator channel for grafana-agent deployment"
+  default     = "2/stable"
+  description = "Operator channel for opentelemetry-collector deployment"
 }
 
-variable "grafana-agent-revision" {
+variable "opentelemetry-collector-revision" {
   type        = number
   default     = null
-  description = "Operator channel revision for grafana-agent deployment"
+  description = "Operator channel revision for opentelemetry-collector deployment"
 }
 
-variable "grafana-agent-config" {
+variable "opentelemetry-collector-config" {
   type        = map(string)
   default     = {}
-  description = "Operator config for grafana-agent deployment"
+  description = "Operator config for opentelemetry-collector deployment"
 }
 
 variable "enable-images-sync" {
