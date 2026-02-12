@@ -2013,7 +2013,7 @@ resource "juju_application" "observability-agent" {
     revision = var.opentelemetry-collector-revision
   }
 
-  units  = 1
+  units  = var.ha-scale
   config = var.opentelemetry-collector-config
 }
 
