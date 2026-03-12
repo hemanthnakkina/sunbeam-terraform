@@ -531,6 +531,21 @@ resource "juju_application" "certificate-authority" {
   })
 }
 
+resource "juju_integration" "certificate-authority-to-keystone-cacert" {
+  count = (var.traefik-to-tls-provider == "certificate-authority" && !var.is-secondary-region) ? 1 : 0
+  model = juju_model.sunbeam.name
+
+  application {
+    name     = juju_application.certificate-authority.name
+    endpoint = "send-ca-cert"
+  }
+
+  application {
+    name     = module.keystone.name
+    endpoint = "receive-ca-cert"
+  }
+}
+
 moved {
   from = module.ovn
   to   = module.ovn[0]
@@ -1818,7 +1833,7 @@ resource "juju_integration" "ldap-to-keystone" {
 }
 
 resource "juju_application" "manual-tls-certificates" {
-  count = (var.traefik-to-tls-provider == null) ? 0 : 1
+  count = (var.traefik-to-tls-provider == "manual-tls-certificates" || var.traefik-to-tls-provider == "vault") ? 1 : 0
   name  = "manual-tls-certificates"
   model = juju_model.sunbeam.name
 
@@ -1858,7 +1873,7 @@ resource "juju_integration" "traefik-public-to-tls-provider" {
 
   application {
     name     = var.traefik-to-tls-provider
-    endpoint = (var.traefik-to-tls-provider == "manual-tls-certificates") ? "certificates" : "vault-pki"
+    endpoint = var.traefik-to-tls-provider == "vault" ? "vault-pki" : "certificates"
   }
 }
 
@@ -1873,7 +1888,7 @@ resource "juju_integration" "traefik-to-tls-provider" {
 
   application {
     name     = var.traefik-to-tls-provider
-    endpoint = (var.traefik-to-tls-provider == "manual-tls-certificates") ? "certificates" : "vault-pki"
+    endpoint = var.traefik-to-tls-provider == "vault" ? "vault-pki" : "certificates"
   }
 }
 
@@ -1888,7 +1903,7 @@ resource "juju_integration" "traefik-rgw-to-tls-provider" {
 
   application {
     name     = var.traefik-to-tls-provider
-    endpoint = (var.traefik-to-tls-provider == "manual-tls-certificates") ? "certificates" : "vault-pki"
+    endpoint = var.traefik-to-tls-provider == "vault" ? "vault-pki" : "certificates"
   }
 }
 
