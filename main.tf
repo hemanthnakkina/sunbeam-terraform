@@ -1276,6 +1276,7 @@ resource "juju_application" "vault" {
   count = var.enable-vault ? 1 : 0
   model = juju_model.sunbeam.name
   name  = "vault"
+  trust = true
 
   charm {
     name     = "vault-k8s"
