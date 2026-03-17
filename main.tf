@@ -1331,6 +1331,13 @@ resource "juju_integration" "barbican-to-vault" {
   }
 }
 
+resource "juju_offer" "barbican-offer" {
+  count            = var.enable-barbican ? 1 : 0
+  model            = juju_model.sunbeam.name
+  application_name = module.barbican[count.index].name
+  endpoints        = ["barbican-service"]
+}
+
 # Ironic feature.
 module "ironic" {
   depends_on           = [module.single-mysql, module.many-mysql]

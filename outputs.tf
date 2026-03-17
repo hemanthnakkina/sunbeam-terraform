@@ -94,3 +94,8 @@ output "manila-data-database-offer-url" {
   description = "URL of the manila data database offer"
   value       = one(juju_offer.manila-data-database-offer[*].url)
 }
+
+output "barbican-offer-url" {
+  description = "URL of the barbican offer"
+  value       = one(juju_offer.barbican-offer[*].url)
+}
