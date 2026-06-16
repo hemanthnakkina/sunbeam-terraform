@@ -1,0 +1,29 @@
+logical_plan_id: openstack-plan
+contracts:
+  - contract_id: openstack-plan:offer:rabbitmq-offer-url
+    producer_plan: openstack-plan
+    consumer_plan: hypervisor-plan
+    kind: offer
+    exported_name: rabbitmq-offer-url
+    offer_endpoint: amqp
+    availability_stage: pre-group
+    removal_stage: finalize
+    mixed_version_coexistence: false
+  - contract_id: openstack-plan:offer:keystone-offer-url
+    producer_plan: openstack-plan
+    consumer_plan: hypervisor-plan
+    kind: offer
+    exported_name: keystone-offer-url
+    offer_endpoint: identity-service
+    availability_stage: pre-group
+    removal_stage: finalize
+    mixed_version_coexistence: false
+  - contract_id: openstack-plan:output:nova-offer-url
+    producer_plan: openstack-plan
+    consumer_plan: hypervisor-plan
+    kind: output
+    exported_name: nova-offer-url
+    output_type: string
+    availability_stage: pre-group
+    removal_stage: finalize
+    mixed_version_coexistence: false

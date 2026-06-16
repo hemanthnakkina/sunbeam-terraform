@@ -1,0 +1,38 @@
+logical_plan_id: openstack-plan
+plan_schema_version: 1
+resources:
+  - logical_resource_id: openstack-plan:juju_model:sunbeam
+    terraform_address: juju_model.sunbeam
+    resource_type: juju_model
+    logical_name: sunbeam
+    owner_plan: openstack-plan
+    cross_plan: false
+    scope_safety: cluster
+  - logical_resource_id: openstack-plan:module:rabbitmq
+    terraform_address: module.rabbitmq
+    resource_type: module
+    logical_name: rabbitmq
+    owner_plan: openstack-plan
+    cross_plan: false
+    scope_safety: scoped
+  - logical_resource_id: openstack-plan:module:keystone
+    terraform_address: module.keystone
+    resource_type: module
+    logical_name: keystone
+    owner_plan: openstack-plan
+    cross_plan: true
+    scope_safety: scoped
+  - logical_resource_id: openstack-plan:module:nova
+    terraform_address: module.nova
+    resource_type: module
+    logical_name: nova
+    owner_plan: openstack-plan
+    cross_plan: true
+    scope_safety: scoped
+  - logical_resource_id: openstack-plan:juju_integration:nova-to-ingress-public
+    terraform_address: juju_integration.nova-to-ingress-public
+    resource_type: juju_integration
+    logical_name: nova-to-ingress-public
+    owner_plan: openstack-plan
+    cross_plan: false
+    scope_safety: scoped

@@ -1,0 +1,28 @@
+logical_plan_id: openstack-plan
+plan_family: control-plane
+release_version: "2026.1"
+plan_schema_version: 1
+plan_build_version: 1
+externally_bounded: false
+resource_inventory_ref: inventory.yaml
+cross_plan_contracts_ref: contracts.yaml
+tfvar_ownership:
+  rabbitmq-channel:
+    owner: openstack-plan
+    source: manifest
+  keystone-channel:
+    owner: openstack-plan
+    source: manifest
+  nova-channel:
+    owner: openstack-plan
+    source: manifest
+exported_outputs:
+  rabbitmq-offer-url:
+    kind: offer
+    owner: openstack-plan
+  keystone-offer-url:
+    kind: offer
+    owner: openstack-plan
+  nova-offer-url:
+    kind: offer
+    owner: openstack-plan
