@@ -1,0 +1,11 @@
+logical_plan_id: openstack-plan
+from_release: "2025.1"
+to_release: "2026.1"
+plan_schema_version: 1
+resources:
+  - logical_resource_id: openstack-plan:module:keystone
+    action: update
+    stage: in-group
+    group: identity-core
+    requires:
+      - migration:cluster-compatibility-migration
