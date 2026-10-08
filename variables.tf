@@ -90,7 +90,7 @@ variable "traefik-channel" {
 variable "traefik-base" {
   description = "Operator base for Traefik deployment"
   type        = string
-  default     = "ubuntu@20.04"
+  default     = "ubuntu@26.04"
 }
 
 variable "traefik-revision" {
